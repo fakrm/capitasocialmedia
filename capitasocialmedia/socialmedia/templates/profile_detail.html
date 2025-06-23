@@ -1,0 +1,95 @@
+<!-- profile_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{{ profile_user.username }}</h3>
+                    {% if profile.private_account %}
+                    <i class="bi bi-lock-fill" title="Private Account"></i>
+                    {% else %}
+                    <i class="bi bi-unlock-fill" title="Public Account"></i>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if profile.profile_pic %}
+                    <img src="{{ profile.profile_pic.url }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                    {% endif %}
+                    <p>{{ profile.bio }}</p>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <a href="{% url 'followers_list' profile_user.username %}" class="text-decoration-none">
+                            <strong>{{ follower_count }}</strong> followers
+                        </a>
+                        <a href="{% url 'following_list' profile_user.username %}" class="text-decoration-none">
+                            <strong>{{ following_count }}</strong> following
+                        </a>
+                    </div>
+                    
+                    {% if request.user != profile_user %}
+                        {% if is_following %}
+                        <a href="{% url 'unfollow_user' profile_user.username %}" class="btn btn-outline-danger w-100">Unfollow</a>
+                        {% elif has_requested %}
+                        <a href="{% url 'cancel_request' profile_user.username %}" class="btn btn-outline-secondary w-100">Cancel Request</a>
+                        {% else %}
+                        <a href="{% url 'follow_user' profile_user.username %}" class="btn btn-primary w-100">
+                            {% if profile.private_account %}Send Follow Request{% elif not  is_following  and not profile.private_account  %}Follow {%else %} Fowlloing{% endif %}
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if request.user == profile_user %}
+                    <a href="{% url 'profile' %}" class="btn btn-primary w-100 mt-2">Edit Profile</a>
+                    <a href="{% url 'follow_requests' %}" class="btn btn-outline-primary w-100 mt-2">
+                               
+                        View Follow Requests
+                        <span class="badge bg-primary">{{ request.user.profile.follow_requests_received.count }}</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <h3>Posts</h3>
+            
+            {% if profile.private_account and not is_following and request.user != profile_user %}
+            <div class="alert alert-info">
+                <i class="bi bi-lock-fill"></i> This account is private. Follow to see their posts.
+            </div>
+            {% else %}
+                {% for post in user_posts %}
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if profile.profile_pic %}
+                            <img src="{{ profile.profile_pic.url }}" class="rounded-circle me-2" style="width: 30px; height: 30px;">
+                            {% endif %}
+                            <a href="{% url 'profile_detail' post.user.username %}" class="text-decoration-none">{{ post.user.username }}</a>
+                        </div>
+                        <small>{{ post.created_at|date:"F d, Y" }}</small>
+                    </div>
+                    <div class="card-body">
+                        <h5>{{ post.title }}</h5>
+                        {% if post.post_type == 'image' %}
+                        <img src="{{ post.file.url }}" class="img-fluid" style="max-height: 300px;" alt="{{ post.title }}">
+                        {% elif post.post_type == 'video' %}
+                        <video controls class="img-fluid" style="max-height: 300px;">
+                            <source src="{{ post.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% endif %}
+                        <p class="mt-2">{{ post.description }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-info">No posts yet.</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

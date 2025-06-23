@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging App - Find Users</title>
+    <link rel="stylesheet" href="{% static 'css/chatbox.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="header">
+            <div class="container flex justify-between items-center">
+                <h1 class="text-xl font-bold">Messaging App</h1>
+                <div>
+                    <span>{{ request.user.username }}</span>
+                  
+                </div>
+            </div>
+        </header>
+
+        <main class="container flex-grow">
+            <div class="flex items-center mb-4">
+                <a href="{% url 'splash' %}" class="mr-2">
+                    <i class="fas fa-arrow-left"></i> Back to Inbox
+                </a>
+                <h2 class="text-2xl font-bold">Find Users</h2>
+            </div>
+
+            <div class="card mb-6">
+                <form method="get" class="search-form p-4">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query }}" 
+                        placeholder="Search by username" 
+                        class="search-input"
+                        autofocus
+                    >
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search mr-2"></i> Search
+                    </button>
+                </form>
+            </div>
+
+            {% if query %}
+                <div class="card">
+                    {% if users %}
+                        <ul class="user-list">
+                            {% for user in users %}
+                                <li class="user-item animate-fade-in">
+                                    <div class="user-info">
+                                        <div class="avatar">
+                                            <span>{{ user.username|first|upper }}</span>
+                                        </div>
+                                        <div class="user-meta">
+                                            <p class="user-name">{{ user.username }}</p>
+                                            {% if user.first_name or user.last_name %}
+                                                <p class="user-details">{{ user.first_name }} {{ user.last_name }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'new_conversation' user.id %}" class="message-button">
+                                        <i class="fas fa-comment mr-1"></i> Message
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <p class="empty-state-text">No users found matching "{{ query }}"</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <p class="empty-state-text">Enter a username above to find people to chat with.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

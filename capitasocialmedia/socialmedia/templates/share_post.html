@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Share Post</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Original post preview -->
+                    <div class="original-post mb-4 p-3 border rounded">
+                        <h5>{{ post.title }}</h5>
+                        <small>By {{ post.user.username }}</small>
+                        
+                        {% if post.post_type == 'image' %}
+                        <div class="text-center mb-3 mt-3">
+                            <img src="{{ post.file.url }}" class="img-fluid rounded" alt="{{ post.title }}" style="max-height: 300px;">
+                        </div>
+                        {% elif post.post_type == 'video' %}
+                        <div class="text-center mb-3 mt-3">
+                            <video controls class="img-fluid rounded" style="max-height: 300px;">
+                                <source src="{{ post.file.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        {% elif post.post_type == 'text' and post.text_content %}
+                        <div class="text-content mt-3">{{ post.text_content }}</div>
+                        {% endif %}
+                        
+                        {% if post.description %}
+                        <p class="mt-2">{{ post.description }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Share form -->
+                    <form method="post" action="{% url 'share_post' post.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="share_text">Add your thoughts (optional)</label>
+                            <textarea class="form-control" id="share_text" name="share_text" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Share Post</button>
+                        </div>
+                        
+                    </form>
+
+                    <div class="mt-4">
+                        <a href="{{ whatsapp_share_url }}" class="btn btn-success" target="_blank">
+                            Share on WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

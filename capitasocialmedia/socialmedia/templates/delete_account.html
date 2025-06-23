@@ -1,0 +1,9 @@
+<form method="post" action="{% url 'delete_account' %}">
+    {% csrf_token %}
+    <label>Email:</label>
+    <input type="email" name="email" required>
+    <button type="submit">Request Account Deletion</button>
+    {% if error %}
+      <p style="color:red">{{ error }}</p>
+    {% endif %}
+  </form>

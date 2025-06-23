@@ -1,0 +1,7 @@
+<!-- create_text_post.html -->
+<form method="post">
+    {% csrf_token %}
+    <label for="text_content">Text Content:</label>
+    <textarea id="text_content" name="text_content" rows="4" cols="50"></textarea>
+    <button type="submit">Create Text Post</button>
+</form>

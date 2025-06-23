@@ -1,0 +1,30 @@
+<!-- follow_requests.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Follow Requests</h2>
+    
+    <div class="list-group">
+        {% for request in requests %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                {% if request.from_user.profile_pic %}
+                <img src="{{ request.from_user.profile_pic.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px;" alt="{{ request.from_user.user.username }}">
+                {% endif %}
+                <a href="{% url 'profile_detail' request.from_user.user.username %}">{{ request.from_user.user.username }}</a>
+                <small class="text-muted ms-2">{{ request.created_at|date:"F d, Y" }}</small>
+            </div>
+            <div>
+                <a href="{% url 'accept_request' request.id %}" class="btn btn-sm btn-success">Accept</a>
+                <a href="{% url 'reject_request' request.id %}" class="btn btn-sm btn-danger">Reject</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">No pending follow requests.</div>
+        {% endfor %}
+    </div>
+    
+    <a href="{% url 'profile' %}" class="btn btn-secondary mt-3">Back to Profile</a>
+</div>
+{% endblock %}

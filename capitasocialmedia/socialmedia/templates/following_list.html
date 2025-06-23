@@ -1,0 +1,33 @@
+<!-- following_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>{{ profile_user.username }} is Following</h2>
+    
+    <div class="list-group">
+        {% for follow in following %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                {% if follow.following.profile_pic %}
+                <img src="{{ follow.following.profile_pic.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px;" alt="{{ follow.following.user.username }}">
+                {% endif %}
+                <a href="{% url 'profile_detail' follow.following.user.username %}">{{ follow.following.user.username }}</a>
+            </div>
+            
+            {% if request.user != follow.following.user %}
+                {% if user_following_them %}
+                <a href="{% url 'unfollow_user' follow.following.user.username %}" class="btn btn-sm btn-outline-danger">Unfollow</a>
+                {% else %}
+                <a href="{% url 'follow_user' follow.following.user.username %}" class="btn btn-sm btn-primary">Follow</a>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="alert alert-info">Not following anyone yet.</div>
+        {% endfor %}
+    </div>
+    
+    <a href="{% url 'profile_detail' profile_user.username %}" class="btn btn-secondary mt-3">Back to Profile</a>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block navigation %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Login</h3>
+            </div>
+            <div class="card-body">
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        {{ form.username|add_class:"form-control" }}
+                        {% if form.username.field.widget.attrs.data_remembered %}
+                        <div class="text-info small mt-1">
+                            <i class="bi bi-info-circle"></i> This account was remembered from your last login
+                        </div>
+                        {% endif %}
+                        {% if form.username.errors %}
+                        <div class="text-danger">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                        <div class="input-group">
+                            {{ form.password|add_class:"form-control" }}
+                            <span class="input-group-text password-toggle" onclick="togglePasswordVisibility('{{ form.password.id_for_label }}',this)">
+                                <i class="bi bi-eye"></i>
+                            </span>
+                        </div>
+                        {% if form.password.errors %}
+                        <div class="text-danger">{{ form.password.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">Remember me on this device</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                    {% if form.username.field.widget.attrs.data_remembered %}
+                    <a href="#" onclick="forgetAccount(event)" class="btn btn-outline-secondary">Use a different account</a>
+                    {% endif %}
+                </form>
+                <div class="mt-3">
+                    <p>Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+                </div>
+                <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function togglePasswordVisibility(inputId, iconElement) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = iconElement.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+    
+    
+    
+    function forgetAccount(event) {
+        event.preventDefault();
+        // Delete the remembered username cookie
+        document.cookie = "remembered_username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Reload the page
+        window.location.reload();
+    }
+    
+    // Auto-check the remember me box if username is remembered
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+        if (usernameField && usernameField.getAttribute('data-remembered') === 'true') {
+            document.getElementById('remember_me').checked = true;
+        }
+    });
+</script>
+{% endblock %}

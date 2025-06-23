@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Recent Posts</h1>
+
+<div class="row">
+    {% for post in posts %}
+    <div class="col-md-4">
+        <div class="card post-card mb-4">
+            <div class="card-header">
+                <h5>{{ post.title }}</h5>
+                <small class="text-muted">
+                    By <a href="{% url 'profile_detail' post.user.username %}" class="text-decoration-none text-primary">
+                      {{ post.user.username }}
+                    </a> on {{ post.created_at|date:"F d, Y" }}
+                  </small>
+                  
+            </div>
+            <div class="card-body">
+                {% if post.post_type == 'image' %}
+                <img src="{{ post.file.url }}" class="img-fluid" alt="{{ post.title }}">
+                {% elif post.post_type == 'video' %}
+                <video controls class="img-fluid">
+                    <source src="{{ post.file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% elif post.post_type == 'text' and post.text_content %}
+                <div class="text-content">{{ post.text_content }}</div>
+                {% endif %}
+                <p class="mt-2">{{ post.description }}</p>
+                
+                <!-- Post interactions: likes, comments, shares -->
+                <div class="interaction-buttons mt-3 d-flex justify-content-between">
+                    <!-- Like button -->
+                    <button class="btn btn-sm {% if request.user in post.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %} like-button">
+                        Like
+                    </button>
+                    
+                    <!-- Comment button -->
+                    <button class="btn btn-sm btn-outline-secondary" 
+                            data-toggle="collapse" data-target="#comments-{{ post.id }}">
+                        <i class="fa fa-comment"></i>
+                        <span>{{ post.comments.count }}</span>
+                    </button>
+                    
+                    <!-- Share button -->
+                    <a href="{% url 'share_post' post.id %}" class="btn btn-sm btn-outline-success">
+                        <i class="fa fa-share"></i> Share
+                    </a>
+                </div>
+                
+                <!-- Comments section (collapsible) -->
+                <div class="collapse mt-3" id="comments-{{ post.id }}">
+                    <div class="card card-body">
+                        <h6>Comments</h6>
+                        <div class="comments-list">
+                            {% for comment in post.comments.all %}
+                            <div class="comment mb-2">
+                                <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+                                <small class="text-muted d-block">{{ comment.created_at|timesince }} ago</small>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">No comments yet.</p>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Add comment form -->
+                        <form method="post" action="{% url 'add_comment' post.id %}" class="mt-2">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" name="comment_text" class="form-control" placeholder="Add a comment...">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary">Post</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'download_file' post.id %}" class="btn btn-sm btn-primary">Download</a>
+                    <a href="{% url 'post_detail' post.id %}" class="btn btn-sm btn-info">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No posts available.</div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle like buttons
+        const likeButtons = document.querySelectorAll('.like-button');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const likeCountElement = this.querySelector('.like-count');
+                
+                fetch(`/post/${postId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        likeCountElement.textContent = data.count;
+                        
+                        if (data.action === 'liked') {
+                            this.classList.remove('btn-outline-primary');
+                            this.classList.add('btn-primary');
+                        } else {
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-outline-primary');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // CSRF token helper function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

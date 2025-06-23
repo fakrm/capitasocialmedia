@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Account Deleted</h2>
+    <div class="alert alert-success">
+        Your account has been successfully deleted.
+    </div>
+    <p>We're sorry to see you go. If you wish to create a new account in the future, you'll need to register again.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+</div>
+{% endblock %}

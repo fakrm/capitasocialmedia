@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Create New Post</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="postForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.post_type.id_for_label }}" class="form-label">Post Type</label>
+                        {{ form.post_type }}
+                    </div>
+                    
+                    <div class="mb-3 file-upload-section">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">File</label>
+                        <div class="input-group">
+                            {{ form.file }}
+                            <button type="button" id="editImageBtn" class="btn btn-info" style="display: none;">Edit Image</button>
+                        </div>
+                        <div class="form-text">For images, upload PNG files. For videos, upload MP4 files.</div>
+                    </div>
+                    
+                    <!-- Image Editor Section (initially hidden) -->
+                    <div id="imageEditorSection" style="display: none;">
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5>Image Editor</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="image-preview-container mb-3">
+                                    <canvas id="imageCanvas" class="img-fluid border"></canvas>
+                                </div>
+                                
+                                <ul class="nav nav-tabs" id="editorTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters" type="button" role="tab">Filters</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="adjust-tab" data-bs-toggle="tab" data-bs-target="#adjust" type="button" role="tab">Adjust</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text" type="button" role="tab">Text</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="emoji-tab" data-bs-toggle="tab" data-bs-target="#emoji" type="button" role="tab">Emoji</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="draw-tab" data-bs-toggle="tab" data-bs-target="#draw" type="button" role="tab">Draw</button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content py-3" id="editorTabContent">
+                                    <!-- Filters Tab -->
+                                    <div class="tab-pane fade show active" id="filters" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <button type="button" class="btn btn-outline-primary w-100" data-filter="grayscale">Grayscale</button>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <button type="button" class="btn btn-outline-primary w-100" data-filter="sepia">Sepia</button>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <button type="button" class="btn btn-outline-primary w-100" data-filter="invert">Invert</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Adjust Tab -->
+                                    <div class="tab-pane fade" id="adjust" role="tabpanel">
+                                        <div class="mb-3">
+                                            <label for="brightness" class="form-label">Brightness</label>
+                                            <input type="range" class="form-range" id="brightness" min="0" max="200" value="100">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contrast" class="form-label">Contrast</label>
+                                            <input type="range" class="form-range" id="contrast" min="0" max="200" value="100">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="saturation" class="form-label">Saturation</label>
+                                            <input type="range" class="form-range" id="saturation" min="0" max="200" value="100">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Text Tab -->
+                                    <div class="tab-pane fade" id="text" role="tabpanel">
+                                        <div class="mb-3">
+                                            <label for="textInput" class="form-label">Add Text</label>
+                                            <input type="text" class="form-control" id="textInput" placeholder="Enter your text">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="fontSize" class="form-label">Font Size</label>
+                                                <input type="range" class="form-range" id="fontSize" min="10" max="100" value="30">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="textColor" class="form-label">Text Color</label>
+                                                <input type="color" class="form-control form-control-color" id="textColor" value="#000000">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary" id="addTextBtn">Add Text</button>
+                                    </div>
+                                    
+                                    <!-- Emoji Tab -->
+                                    <div class="tab-pane fade" id="emoji" role="tabpanel">
+                                        <div class="emoji-grid mb-3">
+                                            <div class="row">
+                                                <div class="col-2 text-center emoji-item" data-emoji="😀">😀</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="😂">😂</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="❤️">❤️</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="👍">👍</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="🔥">🔥</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="⭐">⭐</div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-2 text-center emoji-item" data-emoji="🎉">🎉</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="🌈">🌈</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="💯">💯</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="🚀">🚀</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="👏">👏</div>
+                                                <div class="col-2 text-center emoji-item" data-emoji="👑">👑</div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="emojiSize" class="form-label">Emoji Size</label>
+                                            <input type="range" class="form-range" id="emojiSize" min="20" max="150" value="50">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Draw Tab -->
+                                    <div class="tab-pane fade" id="draw" role="tabpanel">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="brushSize" class="form-label">Brush Size</label>
+                                                <input type="range" class="form-range" id="brushSize" min="1" max="30" value="5">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="brushColor" class="form-label">Brush Color</label>
+                                                <input type="color" class="form-control form-control-color" id="brushColor" value="#ff0000">
+                                            </div>
+                                        </div>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-primary" id="enableDrawingBtn">Start Drawing</button>
+                                            <button type="button" class="btn btn-secondary" id="disableDrawingBtn">Stop Drawing</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button type="button" class="btn btn-warning" id="resetImageBtn">Reset Changes</button>
+                                    <button type="button" class="btn btn-success" id="applyChangesBtn">Apply Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden input for the edited image data -->
+                    <input type="hidden" name="edited_image_data" id="editedImageData">
+                    
+                    <button type="submit" class="btn btn-primary">Create Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .emoji-item {
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+    }
+    
+    .emoji-item:hover {
+        background-color: #f0f0f0;
+        border-radius: 5px;
+    }
+    
+    #imageCanvas {
+        max-width: 100%;
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const postTypeSelect = document.querySelector('select[name="post_type"]');
+        const fileInput = document.querySelector('input[type="file"]');
+        const editImageBtn = document.getElementById('editImageBtn');
+        const imageEditorSection = document.getElementById('imageEditorSection');
+        
+        // Canvas related variables
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        let originalImage = null;
+        
+        // Current state of filters and adjustments
+        let currentState = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            grayscale: false,
+            sepia: false,
+            invert: false
+        };
+        
+        // Text and emoji elements
+        let textElements = [];
+        let emojiElements = [];
+        
+        // Drawing variables
+        let isDrawing = false;
+        let drawingEnabled = false;
+        let lastX = 0;
+        let lastY = 0;
+        
+        // Show/hide edit button based on post type
+        postTypeSelect.addEventListener('change', function() {
+            if (this.value === 'image') {
+                editImageBtn.style.display = 'block';
+            } else {
+                editImageBtn.style.display = 'none';
+                imageEditorSection.style.display = 'none';
+            }
+        });
+        
+        // Show image editor when edit button is clicked
+        editImageBtn.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    originalImage = new Image();
+                    originalImage.onload = function() {
+                        // Set canvas dimensions
+                        canvas.width = originalImage.width;
+                        canvas.height = originalImage.height;
+                        
+                        // Draw the original image
+                        drawImage();
+                        
+                        // Show the editor section
+                        imageEditorSection.style.display = 'block';
+                    };
+                    originalImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image file first');
+            }
+        });
+        
+        // Function to draw the image with current filters
+        function drawImage() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply filters
+            ctx.filter = getFiltersString();
+            
+            // Draw the original image
+            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            
+            // Reset filter for drawing text and emojis
+            ctx.filter = 'none';
+            
+            // Draw text elements
+            drawTextElements();
+            
+            // Draw emoji elements
+            drawEmojiElements();
+        }
+        
+        // Get CSS filter string
+        function getFiltersString() {
+            let filters = [];
+            
+            filters.push(`brightness(${currentState.brightness}%)`);
+            filters.push(`contrast(${currentState.contrast}%)`);
+            filters.push(`saturate(${currentState.saturation}%)`);
+            
+            if (currentState.grayscale) {
+                filters.push('grayscale(100%)');
+            }
+            
+            if (currentState.sepia) {
+                filters.push('sepia(100%)');
+            }
+            
+            if (currentState.invert) {
+                filters.push('invert(100%)');
+            }
+            
+            return filters.join(' ');
+        }
+        
+        // Draw text elements
+        function drawTextElements() {
+            textElements.forEach(element => {
+                ctx.font = `${element.fontSize}px Arial`;
+                ctx.fillStyle = element.color;
+                ctx.fillText(element.text, element.x, element.y);
+            });
+        }
+        
+        // Draw emoji elements
+        function drawEmojiElements() {
+            emojiElements.forEach(element => {
+                ctx.font = `${element.size}px Arial`;
+                ctx.fillText(element.emoji, element.x, element.y);
+            });
+        }
+        
+        // Filter buttons
+        document.querySelectorAll('[data-filter]').forEach(button => {
+            button.addEventListener('click', function() {
+                const filter = this.getAttribute('data-filter');
+                
+                // Toggle filter state
+                currentState[filter] = !currentState[filter];
+                
+                // Update button appearance
+                if (currentState[filter]) {
+                    this.classList.replace('btn-outline-primary', 'btn-primary');
+                } else {
+                    this.classList.replace('btn-primary', 'btn-outline-primary');
+                }
+                
+                // Redraw the image
+                drawImage();
+            });
+        });
+        
+        // Adjustment sliders
+        document.getElementById('brightness').addEventListener('input', function() {
+            currentState.brightness = this.value;
+            drawImage();
+        });
+        
+        document.getElementById('contrast').addEventListener('input', function() {
+            currentState.contrast = this.value;
+            drawImage();
+        });
+        
+        document.getElementById('saturation').addEventListener('input', function() {
+            currentState.saturation = this.value;
+            drawImage();
+        });
+        
+        // Add text functionality
+        document.getElementById('addTextBtn').addEventListener('click', function() {
+            const text = document.getElementById('textInput').value.trim();
+            if (text) {
+                const fontSize = parseInt(document.getElementById('fontSize').value);
+                const color = document.getElementById('textColor').value;
+                
+                // Add text to center of canvas
+                textElements.push({
+                    text: text,
+                    x: canvas.width / 2 - (text.length * fontSize / 4),
+                    y: canvas.height / 2,
+                    fontSize: fontSize,
+                    color: color
+                });
+                
+                // Clear input and redraw
+                document.getElementById('textInput').value = '';
+                drawImage();
+            }
+        });
+        
+        // Add emoji functionality
+        document.querySelectorAll('.emoji-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const emoji = this.getAttribute('data-emoji');
+                const size = parseInt(document.getElementById('emojiSize').value);
+                
+                // Add emoji to center of canvas
+                emojiElements.push({
+                    emoji: emoji,
+                    x: canvas.width / 2 - (size / 4),
+                    y: canvas.height / 2,
+                    size: size
+                });
+                
+                // Redraw the image
+                drawImage();
+            });
+        });
+        
+        // Drawing functionality
+        document.getElementById('enableDrawingBtn').addEventListener('click', function() {
+            drawingEnabled = true;
+            canvas.style.cursor = 'crosshair';
+        });
+        
+        document.getElementById('disableDrawingBtn').addEventListener('click', function() {
+            drawingEnabled = false;
+            canvas.style.cursor = 'default';
+        });
+        
+        // Canvas drawing events
+        canvas.addEventListener('mousedown', function(e) {
+            if (!drawingEnabled) return;
+            
+            isDrawing = true;
+            
+            // Get the mouse position relative to the canvas
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        });
+        
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDrawing || !drawingEnabled) return;
+            
+            // Get brush settings
+            const brushSize = parseInt(document.getElementById('brushSize').value);
+            const brushColor = document.getElementById('brushColor').value;
+            
+            // Get current mouse position
+            const rect = canvas.getBoundingClientRect();
+            const currX = e.clientX - rect.left;
+            const currY = e.clientY - rect.top;
+            
+            // Draw line
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = brushColor;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currX, currY);
+            ctx.stroke();
+            
+            // Update last position
+            lastX = currX;
+            lastY = currY;
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            isDrawing = false;
+        });
+        
+        canvas.addEventListener('mouseout', function() {
+            isDrawing = false;
+        });
+        
+        // Reset image
+        document.getElementById('resetImageBtn').addEventListener('click', function() {
+            // Reset all adjustments and filters
+            currentState = {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                grayscale: false,
+                sepia: false,
+                invert: false
+            };
+            
+            // Reset all sliders
+            document.getElementById('brightness').value = 100;
+            document.getElementById('contrast').value = 100;
+            document.getElementById('saturation').value = 100;
+            
+            // Reset filter buttons
+            document.querySelectorAll('[data-filter]').forEach(button => {
+                button.classList.replace('btn-primary', 'btn-outline-primary');
+            });
+            
+            // Clear text and emoji elements
+            textElements = [];
+            emojiElements = [];
+            
+            // Redraw the image
+            drawImage();
+        });
+        
+        // Apply changes button
+        document.getElementById('applyChangesBtn').addEventListener('click', function() {
+            // Convert canvas to data URL
+            const imageData = canvas.toDataURL('image/png');
+            
+            // Store in hidden input
+            document.getElementById('editedImageData').value = imageData;
+            
+            // Hide the editor section
+            imageEditorSection.style.display = 'none';
+            
+            // Show confirmation message
+            alert('Image changes applied! Click "Create Post" to save your post with the edited image.');
+        });
+        
+        // Form submission - ensure we're submitting the edited image if available
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            const postType = postTypeSelect.value;
+            const editedImageData = document.getElementById('editedImageData').value;
+            
+            if (postType === 'image' && editedImageData && !fileInput.value) {
+                e.preventDefault();
+                alert('Please select an image file first');
+            }
+        });
+    });
+</script>
+{% endblock %}

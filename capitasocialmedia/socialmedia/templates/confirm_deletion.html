@@ -1,0 +1,18 @@
+{% if email_sent %}
+  <div class="alert alert-success">
+    {{ message }}
+  </div>
+  <p>You will receive an email with instructions to complete the account deletion process.</p>
+{% else %}
+  <form method="post">
+    {% csrf_token %}
+    <h2>Confirm Account Deletion</h2>
+    <p>Please enter your password to confirm that you want to delete your account.</p>
+    <label>Enter your password to confirm deletion:</label>
+    <input type="password" name="password" required>
+    <button type="submit">Delete My Account</button>
+    {% if error %}
+      <p style="color:red">{{ error }}</p>
+    {% endif %}
+  </form>
+{% endif %}

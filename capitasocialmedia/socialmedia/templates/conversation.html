@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging App - Conversation</title>
+    <link rel="stylesheet" href="{% static 'css/chatbox.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="header">
+            <div class="container flex items-center">
+                <a href="{% url 'splash' %}" class="mr-2">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="avatar">
+                    <span>{{ other_user.username|first|upper }}</span>
+                </div>
+                <h1 class="text-xl font-bold ml-2">{{ other_user.username }}</h1>
+            </div>
+        </header>
+
+        <main class="container flex-col flex-grow" style="display: flex; flex-direction: column; height: calc(100vh - 60px);">
+            <div class="message-container" id="messages-container">
+                {% for message in messages %}
+                    <div class="message-row {% if message.sender == request.user %}outgoing{% else %}incoming{% endif %}">
+                        <div class="message-bubble {% if message.sender == request.user %}outgoing{% else %}incoming{% endif %} animate-fade-in">
+                            <p>{{ message.content }}</p>
+                            <p class="message-time">
+                                {{ message.created_at|date:"H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="far fa-comment"></i>
+                        </div>
+                        <p class="empty-state-text">No messages yet. Start the conversation!</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form method="post" class="message-form">
+                {% csrf_token %}
+                <input 
+                    type="text" 
+                    name="content" 
+                    class="message-input" 
+                    placeholder="Type a message..." 
+                    autofocus
+                    required
+                >
+                <button type="submit" class="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom of messages
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Call on page load
+        window.onload = scrollToBottom;
+        
+        // Focus the input field
+        document.querySelector('.message-input').focus();
+    </script>
+</body>
+</html>

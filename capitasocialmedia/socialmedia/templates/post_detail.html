@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>{{ post.title }}</h4>
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted">By {{ post.user.username }} on {{ post.created_at|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if post.post_type == 'image' %}
+                    <div class="text-center mb-3">
+                        <img src="{{ post.file.url }}" class="img-fluid rounded" alt="{{ post.title }}">
+                    </div>
+                    {% elif post.post_type == 'video' %}
+                    <div class="text-center mb-3">
+                        <video controls class="img-fluid rounded">
+                            <source src="{{ post.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% elif post.post_type == 'text' and post.text_content %}
+                    <div class="text-content mb-3">{{ post.text_content }}</div>
+                    {% endif %}
+                    
+                    {% if post.description %}
+                    <p class="post-description">{{ post.description }}</p>
+                    {% endif %}
+                    
+                    <!-- Post interactions: likes, shares -->
+                    <div class="post-interactions mt-4 d-flex justify-content-between">
+                        <!-- Like button -->
+                        <button class="like-button btn {% if request.user in post.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                                data-post-id="{{ post.id }}">
+                            <i class="fa fa-thumbs-up"></i>
+                            <span class="like-count">{{ post.likes.all.count }}</span> Likes
+                        </button>
+                        
+                        <!-- Share button -->
+                        <a href="{% url 'share_post' post.id %}" class="btn btn-outline-success">
+                            <i class="fa fa-share"></i> Share
+                        </a>
+                    </div>
+                </div>
+                
+                {% if post.file %}
+                <div class="card-footer">
+                    <a href="{% url 'download_file' post.id %}" class="btn btn-primary">Download</a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Comments section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fa fa-comments"></i> Comments ({{ post.comments.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add comment form -->
+                    <form class="add-comment-form mb-4" method="post" action="{% url 'add_comment' post.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="comment_text">Add a comment</label>
+                            <textarea class="form-control" id="comment_text" name="comment_text" rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Comment</button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <!-- Comments list -->
+                    <div class="comments-list">
+                        {% for comment in post.comments.all %}
+                        <div class="comment mb-3 p-2 border-bottom">
+                            <div class="d-flex">
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <strong>{{ comment.user.username }}</strong>
+                                        <small class="text-muted ml-2">{{ comment.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="comment-text">{{ comment.text }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted">
+                            <p>No comments yet. Be the first to comment!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle like button
+        const likeButton = document.querySelector('.like-button');
+        if (likeButton) {
+            likeButton.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const likeCountElement = this.querySelector('.like-count');
+                
+                fetch(`/post/${postId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        likeCountElement.textContent = data.count;
+                        
+                        if (data.action === 'liked') {
+                            this.classList.remove('btn-outline-primary');
+                            this.classList.add('btn-primary');
+                        } else {
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-outline-primary');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+        
+        // CSRF token helper function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}
