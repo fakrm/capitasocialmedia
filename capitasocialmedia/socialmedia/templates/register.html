@@ -21,8 +21,8 @@
                         {% endif %}
                     </div>
                     <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                        {{ form.email|add_class:"form-control" }}
+                        <label for="{{ form.email.id_for_label }}" class="form-lable"   placeholder="name@example.com">Email</label>
+                        {{ form.email|add_class:"form-control" |attr:"placeholder:name@example.com" }}
                         {% if form.email.errors %}
                         <div class="text-danger">{{ form.email.errors }}</div>
                         {% endif %}

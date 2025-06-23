@@ -67,7 +67,7 @@
 
 
 <!-- Profile Edit Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -106,7 +106,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         
-        <div class="modal-body">
+        <div class="modal-body" >
           <p><strong>Username:</strong> {{ user.username }}</p>
           <p><strong>Email:</strong> {{ user.email }}</p> 
           <div class="form-check form-switch mb-3 ">
@@ -121,22 +121,24 @@
                 </label>
             </form>
         </div>
-          
-        <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete Account</button>
-        </form>
+            <div class="modal-footer  "  >
+                <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger me-5">Delete Account</button>
+                    <button type="button" class="btn btn-primary  " data-bs-dismiss="modal">Close</button>
+                </form>
+
+            </div>
+        
         
        
 
-        <!-- Private Account Toggle -->
+       
         
 
-        
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary  " data-bs-dismiss="modal">Close</button>
-        </div>
+       <!-- <div class="modal-footer">
+            <button type="button" class="btn btn-primary  " data-bs-dismiss="modal">Close</button>
+        </div>-->
 
         
       
