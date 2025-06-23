@@ -135,6 +135,7 @@
   
   .mr-2 {
     margin-right: 0.5rem;
+    color: #ffffff;
   }
   
   .ml-2 {
@@ -232,6 +233,9 @@
   
   .text-xl {
     font-size: 1.25rem;
+    
+    color: #ffffff;
+
   }
   
   .text-2xl {
@@ -291,12 +295,15 @@
   
   /* Header */
   .header {
-    background-color: white;
+     background-color: #2a2a2a ;
     box-shadow: var(--shadow-sm);
     padding: 0.75rem 1rem;
     position: sticky;
     top: 0;
     z-index: 10;
+      color: #ffffff;
+    
+    
   }
   
   /* Cards */
