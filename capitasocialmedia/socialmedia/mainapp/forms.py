@@ -16,11 +16,13 @@ class UserLoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
-
+#not all fields are required for profile update
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['bio', 'profile_pic', 'private_account']
+
+
 
 class PostForm(forms.ModelForm):
     class Meta:
@@ -39,7 +41,7 @@ class MessageForm(forms.ModelForm):
         }
 
 class PostForm(forms.ModelForm):
-    edited_image_data = forms.CharField(required=False, widget=forms.HiddenInput())
+    
     
     class Meta:
         model = Post

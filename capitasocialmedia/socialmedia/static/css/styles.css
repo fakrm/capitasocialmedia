@@ -16,7 +16,7 @@ body {
   font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: var(--text-color);
   background-color: #f0f2f5; /* Slightly darker for better contrast with cards */
-  padding-top: 80px;
+  padding-top: 8px;
   line-height: 1.6;
 }
 
@@ -25,10 +25,12 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+
+
+ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   margin-bottom: 1rem;
-  color: #222; /* Darker heading color */
+  color: black; /* Darker heading color */
 }
 
 h1 {
@@ -39,20 +41,20 @@ h1 {
 }
 
 h1::after {
-  content: '';
+  content: ' ';
   position: absolute;
   left: 0;
   bottom: 0;
   height: 4px;
   width: 60px;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  background: lightseagreen;
   border-radius: 2px;
 }
 
 /* Navbar Styling */
 .navbar {
   box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  padding: 12px 0;
+  padding: 3px 0 ;
   background-color: #fff; 
 }
 
@@ -68,8 +70,9 @@ h1::after {
 .navbar-dark .navbar-nav .nav-link {
   color: rgba(255,255,255,0.9); /* Improved contrast from 0.85 */
   font-weight: 600;
-  padding: 8px 15px;
+  padding: 8px 1px;
   border-radius: 4px;
+  margin-right: 20px;
   transition: var(--transition);
 }
 
@@ -125,9 +128,12 @@ h1::after {
 
 .post-card {
   overflow: hidden;
-  margin-bottom: 30px;
-  height: 100%;
+  margin-bottom: 0px;
+ 
   background-color: #fff; /* Explicit white background */
+  min-height: 600px; /* Ensures card has a minimum height */
+  max-height: 600px; /* Prevents card from growing too large */
+  margin-top: 20px; /* Adds space between cards */
 }
 
 .card-header {
@@ -143,20 +149,34 @@ h1::after {
 }
 
 .card-header small {
-  color: blue; 
+  color: rgb(20, 25, 27); 
   display: block;
+  font-size: 0.9rem;
 }
 
 .card-body {
   padding: 10px;
   background-color: whitesmoke; /* Explicit white background */
+  min-height: 470px; /* Ensures body has a minimum height */
+  max-height: 470px; /* Prevents body from growing too large */
+}
+
+.card-body.login {
+  padding: 10px;
+  background-color: whitesmoke; /* Explicit white background */
+  min-height: 350px; /* Ensures body has a minimum height */
+  max-height: 350px; /* Prevents body from growing too large */
 }
 
 .card-footer {
   background: lightblue;
   border-top: 1px solid rgba(0,0,0,0.08); /* Slightly darker border */
   padding: 12px 20px;
+  min-height: 80x; /* Ensures footer has a minimum height */
+  max-height: 80x;
 }
+
+
 
 .password-toggle {
   cursor: pointer;
@@ -194,22 +214,22 @@ h1::after {
 /* Image and Video Styling */
 .card-body img,
 .card-body video {
-  border-radius: 50px;
+ 
   width: 100%;
   height: auto;
-  max-height: 300px;
-  object-fit: cover;
-  margin-bottom: 15px;
-  border: 1px solid rgba(0,0,0,0.08); /* Subtle border for media elements */
+  
+  
+ 
+  
 }
 
 /* Form Styling */
 .form-control {
   border-radius: var(--border-radius);
-  padding: 10px 15px;
+  padding:  8px  12px;
   border: 1px solid #d0d4db; /* Darker border for better contrast from #e1e5eb */
   transition: var(--transition);
-  color: #333; /* Ensure input text is dark enough */
+  color: black; /* Ensure input text is dark enough */
 }
 
 .form-control:focus {
@@ -224,7 +244,10 @@ h1::after {
 }
 
 textarea.form-control {
-  min-height: 120px;
+  min-height: 80px;
+    height: 80px;
+    max-height: 90px;
+    resize: none;
 }
 
 .form-text {
@@ -288,7 +311,7 @@ textarea.form-control {
 
 /* Post Grid Layout */
 .row > [class*="col-"] {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 /* Custom Scrollbar */
@@ -309,23 +332,9 @@ textarea.form-control {
   background: var(--primary-color);
 }
 
-/* Animation for Cards */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
-.post-card {
-  animation: fadeIn 0.6s ease forwards;
-}
 
-.col-md-4:nth-child(2) .post-card {
-  animation-delay: 0.1s;
-}
 
-.col-md-4:nth-child(3) .post-card {
-  animation-delay: 0.2s;
-}
 
 
 .search-container {

@@ -13,8 +13,7 @@ urlpatterns = [
     path('delete-post/<int:post_id>/', views.delete_post, name='delete_post'),
     path('download/<int:post_id>/', views.download_file, name='download_file'),
     path('create_text_post/', views.create_text_post, name='create_text_post'),
-    path('posts/<int:post_id>/edit_image/', views.edit_image, name='edit_image'),
-    path('posts/<int:post_id>/save_edited_image/', views.save_edited_image, name='save_edited_image'),
+    
     
     path('toggle-privacy/', views.toggle_privacy, name='toggle_privacy'),
     
@@ -35,7 +34,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     
     path('inbox/splash/', views.splash, name='splash'),
-    path('inbox/', views.inbox, name='inbox_content'),
+     path('inbox/', views.inbox, name='inbox_content'),
     path('conversation/<int:conversation_id>/', views.conversation_view, name='conversation_view'),
     path('search-users/', views.search_users, name='search_users'),
     path('new-conversation/<int:user_id>/', views.new_conversation, name='new_conversation'),
@@ -43,7 +42,7 @@ urlpatterns = [
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('post/<int:post_id>/like/', views.toggle_like, name='toggle_like'),
     path('post/<int:post_id>/share/', views.share_post, name='share_post'),
-    path('socialmedia/' ,views.socialmedia , name='socialmedia'),
+     path('socialmedia/' ,views.socialmedia , name='socialmedia'),
      path('delete_account/', views.delete_account, name='delete_account'),
     path('confirm_delete/<str:uidb64>/<str:token>/', views.confirm_deletion, name='confirm_deletion'),
 

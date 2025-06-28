@@ -37,14 +37,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 
-MESSAGE_TAGS = {
-    messages.ERROR: 'alert-danger',     
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.INFO: 'alert-info',
-    messages.DEBUG: 'alert-secondary',
-}
-
 
 @login_required
 def home(request):
@@ -274,6 +266,7 @@ def user_logout(request):
 def profile(request):
     
     if request.method == 'POST':
+        
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
         if form.is_valid():
             form.save()
@@ -298,6 +291,7 @@ def create_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
+            # Create a new post instance but don't save it yet
             post = form.save(commit=False)
             post.user = request.user
             
@@ -306,24 +300,6 @@ def create_post(request):
                 post.file = None
                 post.text_content = request.POST.get('text_content')
             else:
-                # Check if there's edited image data (for image posts)
-                edited_image_data = request.POST.get('edited_image_data')
-                
-                if post.post_type == 'image' and edited_image_data and edited_image_data.startswith('data:image'):
-                    # Process the edited image data
-                    format, imgstr = edited_image_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    
-                    # Generate a unique filename
-                    filename = f"{uuid.uuid4()}.{ext}"
-                    
-                    # Convert base64 to file
-                    image_file = ContentFile(base64.b64decode(imgstr), name=filename)
-                    
-                    # Set as the post file
-                    post.file = image_file
-                else:
-                    # No edited data, validate the uploaded file
                     file = request.FILES.get('file')
                     if file:
                         file_name = file.name.lower()
@@ -342,6 +318,7 @@ def create_post(request):
     else:
         form = PostForm()
     return render(request, 'create_post.html', {'form': form})
+
 
 @login_required
 def delete_post(request, post_id):
@@ -811,12 +788,22 @@ def share_post(request, post_id):
         shared_post = Post.objects.create(
             user=request.user,
             title=f"Shared: {post.title}",
+            file=post.file if post.file else None, 
             description=request.POST.get('share_text', ''),
-            post_type='text',  # Or you might want to copy the original type
+            post_type=post.post_type,  # Or you might want to copy the original type
             text_content=f"Original post by @{post.user.username}: {post.title}"
         )
+
+        if post.file:
+            print("File URL:", post.file.url)
         messages.success(request, 'Post shared successfully.')
-        return redirect('post_detail', post_id=shared_post.id)
+        #return redirect('post_detail', post_id=shared_post.id)
+        return redirect('home')
+    
+    
+
+    
+   
     
     return render(request, 'share_post.html', {'post': post, 'whatsapp_share_url': whatsapp_share_url})
 
