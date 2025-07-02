@@ -26,7 +26,7 @@ from .forms import MessageForm
 from django.db.models import Max, Count, Q
 from django.shortcuts import render
 
-from .forms import CommentForm
+
 from .models import Post, Comment, Like
 
 from django.utils.http import urlsafe_base64_decode
@@ -37,64 +37,103 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 
+import json
+import base64
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from .forms import UserLoginForm
+from .models import Profile
 
 @login_required
 def home(request):
 
-    if not request.user.is_authenticated:
-        messages.warning(request, 'Please log in first.')
-        return redirect('login')  
-    elif request.user.is_authenticated:
-        try:
-            # Get IDs of users the current user follows
-            following_ids = Follower.objects.filter(
+   
+    
+       
+            # retriev the ids where current user is a follower
+            followingids = Follower.objects.filter(
                 follower=request.user.profile
-            ).values_list('following__user', flat=True)
+            ).values_list('following')#just give this column not all columns of table
+            print(followingids)
             
-            # Get posts from users the current user follows (and own posts)
+            # gets post that are following or from the current user
             followed_posts = Post.objects.filter(
-                Q(user__in=following_ids) | Q(user=request.user)
+                Q(user__profile__in=followingids) | Q(user=request.user)
             )
             
-            # Get public posts from users not followed
             public_posts = Post.objects.filter(
-                ~Q(user__in=following_ids),
+                #if user is not a following user and is not a current user but the profile is not private
+                ~Q(user__profile__in=followingids),
                 ~Q(user=request.user),
                 user__profile__private_account=False
             )
             
-            # Combine and sort by created_at
+            # sort all posts based on time
             posts = (followed_posts | public_posts).order_by('-created_at')
-        except:
-            # Fallback if any error occurs (such as Follower table not existing yet)
-            posts = Post.objects.filter(
-                Q(user=request.user) | Q(user__profile__private_account=False)
-            ).order_by('-created_at')
-    else:
-        # For non-authenticated users, show only public posts
-        posts = Post.objects.filter(user__profile__private_account=False).order_by('-created_at')
-    
-    return render(request, 'home.html', {'posts': posts})
+        
+        
+            return render(request, 'home.html', {'posts': posts})
 
 
 @login_required
 def user_search(request):
-    if not request.user.is_authenticated:
-        messages.warning(request, 'Please log in first.')
-        print(request._messages)
-        return redirect('login')  
-    else:
-        query = request.GET.get('q', '')
-    if query:
-        users = User.objects.filter(
-            Q(username__icontains=query) | 
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query)
-        )
-    else:
-        users = User.objects.none()
-    
-    return render(request, 'search_results.html', {'users': users, 'query': query})
+            #Look for search item
+            if request.user.is_authenticated:
+
+                query = request.GET.get('q', '')
+                #if finds the query 
+            if query:
+                users = User.objects.filter( username__icontains=query)
+                
+                
+            # if q is empty  
+            else:
+                users = User.objects.none()
+
+            for user in users:
+                 user_profile = user  
+                 profile = user_profile.profile
+            
+            # Check if the current user is following this profile
+            is_following = False
+            has_requested = False
+            
+            if request.user.is_authenticated:
+                is_following = Follower.objects.filter(
+                    follower=request.user.profile, 
+                    following=profile
+                ).exists()
+                
+                has_requested = FollowRequest.objects.filter(
+                    from_user=request.user.profile,
+                    to_user=profile
+                ).exists()
+            
+            # Get user posts (filter if private and not following)
+            if request.user == user_profile or is_following or not profile.private_account:
+                user_posts = Post.objects.filter(user=user_profile).order_by('-created_at')
+            else:
+                user_posts = []
+            
+            # Get follower count
+            follower_count = Follower.objects.filter(following=profile).count()
+            following_count = Follower.objects.filter(follower=profile).count()
+            
+            context = {
+                'profile_user': user_profile,
+                'profile': profile,
+                'user_posts': user_posts,
+                'is_following': is_following,
+                'has_requested': has_requested,
+                'follower_count': follower_count,
+                'following_count': following_count,
+                'users': users,
+                'query': query,
+            }
+        
+            return render(request, 'search_results.html',context)          
+               
     
 
 def explore(request):
@@ -150,13 +189,7 @@ def verify_email(request, token):
     
 
 
-import json
-import base64
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from .forms import UserLoginForm
-from .models import Profile
+
 
 def user_login(request):
     if request.method == 'POST':
@@ -344,15 +377,20 @@ def edit_image(request, post_id):
 
 @login_required
 def toggle_privacy(request):
-    if request.method == 'POST':
-        profile = request.user.profile
-        profile.private_account = not profile.private_account
-        profile.save()
-        
-        status = 'private' if profile.private_account else 'public'
-        messages.success(request, f'Your account is now {status}.')
-    
-    return redirect('profile')
+   if request.method == 'POST':
+       profile = request.user.profile
+       
+       if profile.private_account==True:
+           profile.private_account = False
+           status = 'public'
+       else:
+           profile.private_account = True
+           status = 'private'
+           
+       profile.save()
+       messages.success(request, f'Your account is now {status}.')
+   
+   return redirect('profile')
 
 
 
@@ -424,22 +462,13 @@ def download_file(request, post_id):
 
 
 
-# views.py - add these new views
+
 @login_required
 def follow_user(request, username):
     user_to_follow = get_object_or_404(User, username=username)
     from_profile = request.user.profile
     to_profile = user_to_follow.profile
-    
-    # Don't allow self-follow
-    if request.user == user_to_follow:
-        messages.warning(request, "You cannot follow yourself.")
-        return redirect('profile_detail', username=username)
-    
-    # Check if already following
-    if Follower.objects.filter(follower=from_profile, following=to_profile).exists():
-        messages.info(request, f"You are already following {username}.")
-        return redirect('profile_detail', username=username)
+
     
     # Check if a follow request already exists
     if FollowRequest.objects.filter(from_user=from_profile, to_user=to_profile).exists():
@@ -457,6 +486,7 @@ def follow_user(request, username):
     
     return redirect('profile_detail', username=username)
 
+
 @login_required
 def unfollow_user(request, username):
     user_to_unfollow = get_object_or_404(User, username=username)
@@ -467,7 +497,9 @@ def unfollow_user(request, username):
     follow_relationship.delete()
     
     messages.success(request, f"You have unfollowed {username}.")
-    return redirect('profile_detail', username=username)
+   # return redirect('user_search', q=username)
+   #gets back to the serach page with search item
+    return redirect(f'/search/?q={username}')
 
 @login_required
 def cancel_request(request, username):
@@ -483,7 +515,7 @@ def cancel_request(request, username):
 
 @login_required
 def follow_requests(request):
-    # Get all pending follow requests for the current user
+    # get all pending follow requests for the current user, sort based on time created
     pending_requests = FollowRequest.objects.filter(to_user=request.user.profile).order_by('-created_at')
     return render(request, 'follow_requests.html', {'requests': pending_requests})
 
@@ -491,7 +523,7 @@ def follow_requests(request):
 def accept_request(request, request_id):
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
     
-    # Create follower relationship
+    # Create follower 
     Follower.objects.create(follower=follow_request.from_user, following=follow_request.to_user)
     
     # Delete the request
@@ -502,11 +534,12 @@ def accept_request(request, request_id):
 
 @login_required
 def reject_request(request, request_id):
+    #found the request in DB
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
-    username = follow_request.from_user.user.username
+   
     follow_request.delete()
     
-    messages.success(request, f"You rejected {username}'s follow request.")
+    messages.success(request, f"You rejected {follow_request.from_user.user.username}'s follow request.")
     return redirect('follow_requests')
 
 @login_required
@@ -580,7 +613,7 @@ def following_list(request, username):
 
 
 
-# Add this form class to your views.py
+
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
@@ -698,14 +731,10 @@ def post_detail(request, post_id):
 
 
 def add_comment(request, post_id):
-    if not request.user.is_authenticated:
-        messages.warning(request, 'Please log in to comment.')
-        return redirect('login')
-    
     post = get_object_or_404(Post, id=post_id)
     
     if request.method == 'POST':
-        text = request.POST.get('comment_text')
+        text = request.POST.get('text')  
         if text:
             Comment.objects.create(
                 post=post,
@@ -716,25 +745,29 @@ def add_comment(request, post_id):
         else:
             messages.error(request, 'Comment cannot be empty.')
     
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
+    comments = post.comments.all().order_by('-created_at')
+    
+    return render(request, 'comment_area.html', {
+        'post': post,
+        'comments': comments
+    })
 
 def toggle_like(request, post_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({'status': 'error', 'message': 'Login required'}, status=401)
+    
     
     post = get_object_or_404(Post, id=post_id)
     
     # Check if the user has already liked the post
-    like = Like.objects.filter(post=post, user=request.user).first()
+    like = Like.objects.filter(post=post, user=request.user)
     
     if like:
         # Unlike if already liked
         like.delete()
-        return JsonResponse({'status': 'success', 'action': 'unliked', 'count': post.likes.count()})
+        return redirect('home')
     else:
         # Like if not already liked
         Like.objects.create(post=post, user=request.user)
-        return JsonResponse({'status': 'success', 'action': 'liked', 'count': post.likes.count()})
+        return redirect('home')
 
 # def share_post(request, post_id):
 #     if not request.user.is_authenticated:

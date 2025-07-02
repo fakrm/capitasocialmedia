@@ -71,7 +71,7 @@ class Post(models.Model):
       
 
 
-# In models.py - add these models
+#this is for private profiles
 class FollowRequest(models.Model):
     from_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='follow_requests_sent')
     to_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='follow_requests_received')
@@ -79,7 +79,7 @@ class FollowRequest(models.Model):
     
     class Meta:
         unique_together = ('from_user', 'to_user')
-
+#for public profiles we just create follower without sending requests
 class Follower(models.Model):
     follower = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='following')
     following = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='followers')
@@ -129,14 +129,10 @@ class Comment(models.Model):
     
 
 
-# Add these to your models.py
+
 class Like(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     
-    class Meta:
-        unique_together = ('post', 'user')  # A user can only like a post once
-    
-    def __str__(self):
-        return f'Like by {self.user.username} on {self.post.title}'    
+   

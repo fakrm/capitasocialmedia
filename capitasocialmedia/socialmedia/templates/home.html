@@ -24,7 +24,7 @@
                 {% elif post.post_type == 'video' %}
                 <video controls class="img-fluid">
                     <source src="{{ post.file.url }}" type="video/mp4">
-                    Your browser does not support the video tag.
+                   
                 </video>
                 {% elif post.post_type == 'text' and post.text_content %}
                 <div class="text-content">{{ post.text_content }}</div>
@@ -32,22 +32,28 @@
                 <p class="mt-2">{{ post.description }}</p>
                 
                 <!-- Post interactions: likes, comments, shares -->
-                <div class="interaction-buttons mt-3 d-flex justify-content-between">
+                <div class="interaction-buttons pt-3 d-flex justify-content-between">
                     <!-- Like button -->
-                    <button class="btn btn-sm {% if request.user in post.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %} like-button">
-                        Like
-                    </button>
+                    <form method="post" action="{% url 'toggle_like' post.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            Likes {{post.like_set.count}}
+
+                        </button>
+                    </form>
+                    
                     
                     <!-- Comment button -->
-                    <button class="btn btn-sm btn-outline-secondary" 
-                            data-toggle="collapse" data-target="#comments-{{ post.id }}">
-                        <i class="fa fa-comment"></i>
-                        <span>{{ post.comments.count }}</span>
-                    </button>
+                    <!-- Comment button that goes to comment page -->
+                        <a href="{% url 'add_comment' post.id %}" class="btn btn-sm btn-primary">
+                            Add Comment ({{ post.comments.count }})
+                        </a>
+
+                        
                     
                     <!-- Share button -->
                      
-                    <a href="{% url 'share_post' post.id %}" class="btn btn-sm btn-outline-success">
+                    <a href="{% url 'share_post' post.id %}" class="btn btn-sm btn-success">
 
                         <i class="fa fa-share"></i> Share
                     </a>
@@ -100,56 +106,4 @@
     {% endfor %}
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle like buttons
-        const likeButtons = document.querySelectorAll('.like-button');
-        likeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const postId = this.getAttribute('data-post-id');
-                const likeCountElement = this.querySelector('.like-count');
-                
-                fetch(`/post/${postId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        likeCountElement.textContent = data.count;
-                        
-                        if (data.action === 'liked') {
-                            this.classList.remove('btn-outline-primary');
-                            this.classList.add('btn-primary');
-                        } else {
-                            this.classList.remove('btn-primary');
-                            this.classList.add('btn-outline-primary');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-        
-        // CSRF token helper function
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    });
-</script>
 {% endblock %}

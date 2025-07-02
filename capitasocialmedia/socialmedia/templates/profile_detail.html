@@ -17,6 +17,11 @@
                 <div class="card-body">
                     {% if profile.profile_pic %}
                     <img src="{{ profile.profile_pic.url }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                    {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" 
+                            style="width: 150px; height: 150px; max-width: 150px; background-color: #6c757d; color: white; font-size: 3rem; ">
+                            {{ profile.user.username|first|upper }}
+                       </div>
                     {% endif %}
                     <p>{{ profile.bio }}</p>
                     
@@ -29,17 +34,7 @@
                         </a>
                     </div>
                     
-                    {% if request.user != profile_user %}
-                        {% if is_following %}
-                        <a href="{% url 'unfollow_user' profile_user.username %}" class="btn btn-outline-danger w-100">Unfollow</a>
-                        {% elif has_requested %}
-                        <a href="{% url 'cancel_request' profile_user.username %}" class="btn btn-outline-secondary w-100">Cancel Request</a>
-                        {% else %}
-                        <a href="{% url 'follow_user' profile_user.username %}" class="btn btn-primary w-100">
-                            {% if profile.private_account %}Send Follow Request{% elif not  is_following  and not profile.private_account  %}Follow {%else %} Fowlloing{% endif %}
-                        </a>
-                        {% endif %}
-                    {% endif %}
+                  
                     
                     {% if request.user == profile_user %}
                     <a href="{% url 'profile' %}" class="btn btn-primary w-100 mt-2">Edit Profile</a>
@@ -53,8 +48,8 @@
             </div>
         </div>
         
-        <div class="col-md-8">
-            <h3>Posts</h3>
+        <div class="row"><!--To show posts row by row-->
+            <h1>Posts</h1>
             
             {% if profile.private_account and not is_following and request.user != profile_user %}
             <div class="alert alert-info">
@@ -62,18 +57,15 @@
             </div>
             {% else %}
                 {% for post in user_posts %}
-                <div class="card mb-3">
+                <div class="col-md-4"> <!--each page has 12 col this use 4 of them for a card so 3 in each page-->
+
+                    <div class="card  mb-3">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            {% if profile.profile_pic %}
-                            <img src="{{ profile.profile_pic.url }}" class="rounded-circle me-2" style="width: 30px; height: 30px;">
-                            {% endif %}
-                            <a href="{% url 'profile_detail' post.user.username %}" class="text-decoration-none">{{ post.user.username }}</a>
-                        </div>
+                        {{post.title}}
                         <small>{{ post.created_at|date:"F d, Y" }}</small>
                     </div>
                     <div class="card-body">
-                        <h5>{{ post.title }}</h5>
+                       
                         {% if post.post_type == 'image' %}
                         <img src="{{ post.file.url }}" class="img-fluid" style="max-height: 300px;" alt="{{ post.title }}">
                         {% elif post.post_type == 'video' %}
@@ -84,7 +76,16 @@
                         {% endif %}
                         <p class="mt-2">{{ post.description }}</p>
                     </div>
+                    <div class="card-footer d-flex justify-content-center">
+                        <a href="{% url 'download_file' post.id %}" class="btn btn-sm btn-primary  ">Download</a>
+                        
+                   </div>
+
                 </div>
+
+
+                </div>
+                
                 {% empty %}
                 <div class="alert alert-info">No posts yet.</div>
                 {% endfor %}

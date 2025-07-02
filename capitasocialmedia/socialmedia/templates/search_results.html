@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container">
     <h2 class="mb-4">Search Results for "{{ query }}"</h2>
+
     
     {% if users %}
         <div class="row">
@@ -13,20 +14,19 @@
                             <div class="d-flex align-items-center mb-3">
                                 {% if user.profile.profile_pic %}
                                     <img src="{{ user.profile.profile_pic.url }}" alt="{{ user.username }}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    
                                 {% else %}
                                     <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
                                         <span style="font-size: 24px;">{{ user.username|first|upper }}</span>
                                     </div>
                                 {% endif %}
-                                <div>
-                                    <h5 class="card-title mb-0">{{ user.username }}</h5>
-                                    {% if user.first_name or user.last_name %}
-                                        <p class="text-muted small mb-0">{{ user.first_name }} {{ user.last_name }}</p>
-                                    {% endif %}
-                                </div>
+                               
+                                
                             </div>
+                            {{ user.username|capfirst }} <br> {{user.profile.bio}}
                             
-                            <div class="d-flex justify-content-between mb-3">
+                            
+                            <div class="d-flex justify-content-between" style="margin-top: 40px">
                                 <small class="text-muted">{{ user.post_set.count }} posts</small>
                                 <small class="text-muted">
                                     {{ user.profile.followers.count|default:"0" }} followers
@@ -37,32 +37,35 @@
                             </div>
                             
                             {% if user.profile.private_account %}
-                                <div class="text-center mb-3">
+                                <div class="text-center" style="margin-top: 90px">
                                     <div class="d-flex align-items-center justify-content-center">
                                         <i class="bi bi-lock-fill me-2"></i>
                                         <span>This account is private</span>
                                     </div>
                                     <small class="text-muted">Follow to see their photos and videos.</small>
                                 </div>
-                            {% else %}
-                                {% if user.post_set.exists %}
-                                    <div class="row g-1 mb-3">
-                                        {% for post in user.post_set.all|slice:":3" %}
-                                            <div class="col-4">
-                                                {% if post.file %}
-                                                    <img src="{{ post.file.url }}" alt="Post thumbnail" class="img-thumbnail" style="object-fit: cover; height: 70px; width: 100%;">
-                                                {% endif %}
-                                            </div>
-                                        {% endfor %}
+                           
+                               
+                            {% endif %}
+
+                            {% if not user.profile.private_account %}
+                                <div class="text-center" style="margin-top: 70px">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-unlock-fill me-2"></i>
+                                        <span>This account is not private </span>
                                     </div>
-                                {% else %}
-                                    <div class="text-center text-muted mb-3">No posts yet</div>
-                                {% endif %}
+                                    <small class="text-muted">Press View Profile</small>
+                                </div>
+                           
+                               
                             {% endif %}
                             
-                            <div class="d-grid">
+                            
+                            <div class="d-grid" style="margin-top: 50px">
                                 {% if user == request.user %}
-                                    <a href="{% url 'profile' %}" class="btn btn-outline-primary">Your Profile</a>
+                                 <a href="{% url 'profile' %}" class="btn btn-outline-primary disabled ">Follow</a>
+                                    <a href="{% url 'profile' %}" class="btn btn-outline-primary mt-2">Your Profile</a>
+                                    
                                 {% else %}
                                     {% if request.user.is_authenticated %}
                                         {% if is_following %}
@@ -70,12 +73,11 @@
                                         {% elif has_requested %}
                                             <a href="{% url 'cancel_request' user.username %}" class="btn btn-outline-secondary w-100">Cancel Request</a>
                                         {% else %}
-                                            <a href="{% url 'follow_user' user.username %}" class="btn btn-primary w-100">
+                                            <a href="{% url 'follow_user' user.username %}" class="btn btn-outline-primary">
                                                 
                                                 {% if not is_following and user.profile.private_account %}
                                                     Send Follow Request
-                                                {% elif is_following %}
-                                                    Following
+                                                
                                                 {% else %}
                                                     Follow
                                                 {% endif %}
@@ -83,7 +85,7 @@
                                         {% endif %}
                                     {% endif %}
                                     
-                                    <a href="{% url 'profile_detail' username=user.username %}" class="btn btn-outline-secondary mt-2">View Profile</a>
+                                    <a href="{% url 'profile_detail' username=user.username %}" class="btn btn-outline-primary mt-2">View Profile</a>
                                 {% endif %}
                             </div>
                         </div>

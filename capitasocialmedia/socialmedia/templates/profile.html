@@ -44,7 +44,7 @@
         <div class="card mb-3">
             
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5> {{ post.title }} </h5>
+                 {{ post.title }} 
                 <div>
                     <small>{{ post.created_at|date:"F d, Y" }}</small>
                     {% if user.profile.private_account %}
@@ -78,7 +78,7 @@
 
 
 <!-- Profile Edit Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true" >
+<div class="modal fade" id="profileModal"  >
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -115,7 +115,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="profileModal2" tabindex="-1" aria-labelledby="profileModal2Label" aria-hidden="true">
+<div class="modal fade" id="profileModal2" >
     <div class="modal-dialog">
       <div class="modal-content">
       
@@ -163,5 +163,10 @@
       </div>
     </div>
   </div>
+
+
+
+
+
   
 {% endblock %}
