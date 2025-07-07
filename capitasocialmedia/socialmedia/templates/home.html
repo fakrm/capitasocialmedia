@@ -7,6 +7,7 @@
 
 <div class="row">
     {% for post in posts %}
+    
     <div class="col-md-4">
         <div class="card post-card ">
             <div class="card-header">
@@ -15,6 +16,8 @@
                     By <a href="{% url 'profile_detail' post.user.username %}" class="text-decoration-none text-primary">
                       {{ post.user.username }}
                     </a> on {{ post.created_at|date:"F d, Y" }}
+                    {{ post.id }}<!--increaments by one -->
+                    
                   </small>
                   
             </div>
@@ -43,49 +46,21 @@
                     </form>
                     
                     
-                    <!-- Comment button -->
-                    <!-- Comment button that goes to comment page -->
+                   
                         <a href="{% url 'add_comment' post.id %}" class="btn btn-sm btn-primary">
                             Add Comment ({{ post.comments.count }})
                         </a>
 
                         
                     
-                    <!-- Share button -->
+                    
                      
-                    <a href="{% url 'share_post' post.id %}" class="btn btn-sm btn-success">
-
+                    <a  class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal{{ post.id }}">
                         <i class="fa fa-share"></i> Share
                     </a>
                 </div>
                 
-                <!-- Comments section (collapsible) -->
-                <div class="collapse mt-3" id="comments-{{ post.id }}">
-                    <div class="card card-body">
-                        <h6>Comments</h6>
-                        <div class="comments-list">
-                            {% for comment in post.comments.all %}
-                            <div class="comment mb-2">
-                                <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
-                                <small class="text-muted d-block">{{ comment.created_at|timesince }} ago</small>
-                            </div>
-                            {% empty %}
-                            <p class="text-muted">No comments yet.</p>
-                            {% endfor %}
-                        </div>
-                        
-                        <!-- Add comment form -->
-                        <form method="post" action="{% url 'add_comment' post.id %}" class="mt-2">
-                            {% csrf_token %}
-                            <div class="input-group">
-                                <input type="text" name="comment_text" class="form-control" placeholder="Add a comment...">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary">Post</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+               
             </div>
             <div class="card-footer home">
                 {% if post.post_type != 'text' %}
@@ -99,11 +74,73 @@
         </div>
         
     </div>
+    <div class="modal fade" id="shareModal{{ post.id }}">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel{{ post.id }}">Share Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                
+                    <div class="original-post mb-4 p-3 border rounded">
+                       <p style="font-weight: bold;">{{post.title}}</p>
+                        <small>By {{ post.user.username }} on {{ post.created_at|date:"F j, Y" }}</small>
+
+                        {% if post.post_type == 'image' %}
+                        <div class="text-center mb-3 mt-3">
+                            <img src="{{ post.file.url }}" class="img-fluid rounded" alt="{{ post.title }}" style="max-height: 350px; max-width: 350px;">
+                        </div>
+                        {% elif post.post_type == 'video' %}
+                        <div class="text-center mb-3 mt-3">
+                            <video controls class="img-fluid rounded" style="max-height: 350px; max-width: 350px;">
+                                <source src="{{ post.file.url }}" type="video/mp4">
+                            </video>
+                        </div>
+                        {% elif post.post_type == 'text' and post.text_content %}
+                        <div class="text-content mb-3 mt-3">{{ post.text_content }}</div>
+                        {% endif %}
+                        
+                        {% if post.description %}
+                        <p class="mt-2">{{ post.description }}</p>
+                        {% endif %}
+                    </div>
+                
+            </div>
+            
+            <div class="modal-footer">
+                <form method="post" action="{% url 'share_post' post.id %}">
+                    {% csrf_token %}
+                   
+                    <div class="form-group justify-content-between" >
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="margin-right: 360px">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="margin-left: 160px">Share Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
     {% empty %}
     <div class="col-12">
         <div class="alert alert-info">No posts available.</div>
     </div>
     {% endfor %}
+
+
+
+
+
+
+
 </div>
 
 {% endblock %}

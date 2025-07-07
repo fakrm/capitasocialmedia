@@ -63,12 +63,9 @@ class Post(models.Model):
     def total_posts(self):
         return Post.objects.filter(user=self.user).count()
     
-    #without modifing the db
-    @property
-    def total_likes(self):
-        return self.likes.count()
+   
     
-      
+   
 
 
 #this is for private profiles
@@ -121,11 +118,7 @@ class Comment(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     
-    class Meta:
-        ordering = ['-created_at']  # Most recent comments first
-    
-    def __str__(self):
-        return f'Comment by {self.user.username} on {self.post.title}'       
+          
     
 
 
@@ -134,5 +127,23 @@ class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Share(models.Model):
+   
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self,  **kwargs):
+        
+        if not self.pk:
+            self.id = self.post.id
+        super().save( **kwargs)
+
+
+
+    
+
     
    

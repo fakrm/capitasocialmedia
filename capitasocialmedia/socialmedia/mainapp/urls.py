@@ -39,7 +39,9 @@ urlpatterns = [
     path('search-users/', views.search_users, name='search_users'),
     path('new-conversation/<int:user_id>/', views.new_conversation, name='new_conversation'),
     path('post/<int:post_id>/', views.post_detail, name='post_detail'),
+
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
+    
     path('post/<int:post_id>/like/', views.toggle_like, name='toggle_like'),
     path('post/<int:post_id>/share/', views.share_post, name='share_post'),
      path('socialmedia/' ,views.socialmedia , name='socialmedia'),

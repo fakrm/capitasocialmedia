@@ -1,4 +1,7 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 {% extends 'base.html' %}
 
 {% load static %}
@@ -32,25 +35,25 @@
             </div>
 
             <div class="card-footer">
-                <div class="interaction-buttons d-flex justify-content-between align-items-center">
-                    <!-- Comments Modal Button -->
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#commentsModal{{ post.id }}">
+                <div class="cbuttons">
+                    
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#commentsModal">
                         <i class="fas fa-comment"></i> Comments ({{ post.comments.count }})
                     </button>
                     
-                    <!-- You can add other buttons here like Like, Share etc. -->
+                   
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Comments Modal -->
-<div class="modal fade" id="commentsModal{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel{{ post.id }}" aria-hidden="true">
+
+<div class="modal fade" id="commentsModal"  >
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="commentsModalLabel{{ post.id }}">
+                <h5 class="modal-title" >
                     Comments
                 </h5>
                 
@@ -58,23 +61,24 @@
             
             <div class="modal-body">
                 
-                <div class="comments-list mb-4" style="max-height: 400px; overflow-y: auto;">
+                <div class="comments-list mb-3" style="max-height: 500px; overflow-y: auto; ">
                     {% for comment in comments %}
                     <div class="comment mb-3 p-2 border-bottom">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
+                                
                                 <a class="text-primary" href="{% url 'profile_detail' comment.user.username %}">
                                     {{ comment.user.username }}
                                 </a>
                                 <p class="mb-1 mt-1">{{ comment.text }}</p>
-                                <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                                <small class="text-muted">{{ comment.created_at }} </small>
                             </div>
                         </div>
                     </div>
                     {% empty %}
                     <div class="text-center text-muted py-4">
                         <i class="fa-sharp-duotone fa-solid fa-comment"></i>
-                        <p>No comments yet.</p>
+                        <p>No comment yet.</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -85,7 +89,7 @@
                     <form method="post" action="{% url 'add_comment' post.id %}">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <textarea name="text"  placeholder="Write your comment here..." class="form-control" required></textarea>
+                            <textarea name="textforcom"  placeholder="Write your comment here..." class="form-control" required></textarea>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>

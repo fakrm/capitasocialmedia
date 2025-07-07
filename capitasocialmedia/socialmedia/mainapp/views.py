@@ -36,7 +36,7 @@ from django.contrib.auth.tokens import default_token_generator as token_generato
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-
+from .models import Share
 import json
 import base64
 from django.shortcuts import render, redirect
@@ -45,22 +45,37 @@ from django.contrib import messages
 from .forms import UserLoginForm
 from .models import Profile
 
+from itertools import chain
+from operator import attrgetter
+
 @login_required
 def home(request):
 
    
-    
-       
+         
+           
             # retriev the ids where current user is a follower
             followingids = Follower.objects.filter(
                 follower=request.user.profile
-            ).values_list('following')#just give this column not all columns of table
+            ).values_list('following',flat=True)#just give this column not all columns of table
             print(followingids)
+
+            shared_postids = Share.objects.filter(
+                    Q(user__profile__in=followingids) | Q(user=request.user) | Q(user__profile__private_account=False)
+            ).values_list('post_id', flat=True)
+            print(shared_postids)
+
+        
+    
             
             # gets post that are following or from the current user
             followed_posts = Post.objects.filter(
                 Q(user__profile__in=followingids) | Q(user=request.user)
             )
+            
+            shared_posts = Post.objects.filter(id__in=shared_postids)
+
+            print("My shared posts count:", shared_posts.count())
             
             public_posts = Post.objects.filter(
                 #if user is not a following user and is not a current user but the profile is not private
@@ -68,12 +83,13 @@ def home(request):
                 ~Q(user=request.user),
                 user__profile__private_account=False
             )
-            
-            # sort all posts based on time
-            posts = (followed_posts | public_posts).order_by('-created_at')
-        
-        
-            return render(request, 'home.html', {'posts': posts})
+
+
+            all_posts_list = list(followed_posts) + list(public_posts)+ list(shared_posts)
+
+
+
+            return render(request, 'home.html', {'posts': all_posts_list})
 
 
 @login_required
@@ -734,7 +750,7 @@ def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
     if request.method == 'POST':
-        text = request.POST.get('text')  
+        text = request.POST.get('textforcom')  
         if text:
             Comment.objects.create(
                 post=post,
@@ -743,8 +759,8 @@ def add_comment(request, post_id):
             )
             messages.success(request, 'Comment added successfully.')
         else:
-            messages.error(request, 'Comment cannot be empty.')
-    
+            messages.error(request, 'An error happend.')
+    #Reverse relation
     comments = post.comments.all().order_by('-created_at')
     
     return render(request, 'comment_area.html', {
@@ -769,76 +785,48 @@ def toggle_like(request, post_id):
         Like.objects.create(post=post, user=request.user)
         return redirect('home')
 
-# def share_post(request, post_id):
-#     if not request.user.is_authenticated:
-#         messages.warning(request, 'Please log in to share posts.')
-#         return redirect('login')
-    
-#     post = get_object_or_404(Post, id=post_id)
-    
-#     # For simple sharing, we'll create a new post that references the original
-#     if request.method == 'POST':
-#         # Create a new post with reference to the original
-#         shared_post = Post.objects.create(
-#             user=request.user,
-#             title=f"Shared: {post.title}",
-#             description=request.POST.get('share_text', ''),
-#             post_type='text',  # Or you might want to copy the original type
-#             text_content=f"Original post by @{post.user.username}: {post.title}"
-#         )
-#         messages.success(request, 'Post shared successfully.')
-#         return redirect('post_detail', post_id=shared_post.id)
-    
-#     return render(request, 'share_post.html', {'post': post})
 
-
-#This will share post but with an extra '??? and not in format of a link
 
 def share_post(request, post_id):
-    if not request.user.is_authenticated:
-        messages.warning(request, 'Please log in to share posts.')
-        return redirect('login')
-    
+    #Get the post
     post = get_object_or_404(Post, id=post_id)
+   
     
-    # Prepare the shareable content for WhatsApp
-    post_url = request.build_absolute_uri(post.get_absolute_url())  # Get the URL of the post
-    post_title = post.title
-    post_description = post.description or 'No description provided.'
-    post_image_url = post.file.url if post.post_type == 'image' else ''
-    
-    # Create a message for WhatsApp sharing
-    whatsapp_message = f"Check out this post: {post_url}"
-    print("WhatsApp Share message:", whatsapp_message)
-    
-    # URL encode the message for WhatsApp
-    whatsapp_share_url = f"https://wa.me/?text={quote(whatsapp_message)}"
-    print("WhatsApp Share URL:", whatsapp_share_url)
-    
-    # For simple sharing, we'll create a new post that references the original
     if request.method == 'POST':
-        # Create a new post with reference to the original
-        shared_post = Post.objects.create(
-            user=request.user,
-            title=f"Shared: {post.title}",
-            file=post.file if post.file else None, 
-            description=request.POST.get('share_text', ''),
-            post_type=post.post_type,  # Or you might want to copy the original type
-            text_content=f"Original post by @{post.user.username}: {post.title}"
-        )
+        
+        existing_share = Share.objects.filter(post=post, user=request.user)
+        
+        if existing_share:
+            messages.error(request, 'You have already shared this post.')
+            return redirect('home')
+        
 
-        if post.file:
-            print("File URL:", post.file.url)
+    if request.method == 'POST':
+        # a new share post
+        shared_post = Share.objects.create(
+              
+                post=post,
+                user=request.user
+            )
+        
         messages.success(request, 'Post shared successfully.')
-        #return redirect('post_detail', post_id=shared_post.id)
+        
         return redirect('home')
+              
+       # return render(request, 'home.html', {'post': shared_post})
+   
+    else:
+        messages.success(request, 'Post shared unsuccessfully.')
+
+        return redirect('home')
+
     
     
 
     
    
     
-    return render(request, 'share_post.html', {'post': post, 'whatsapp_share_url': whatsapp_share_url})
+    #return render(request, 'share_post.html', {'post': post })
 
 
 

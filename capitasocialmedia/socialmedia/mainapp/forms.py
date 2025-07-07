@@ -40,14 +40,6 @@ class MessageForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Type your message...', 'class': 'w-full p-2 border rounded'})
         }
 
-class PostForm(forms.ModelForm):
-    
-    
-    class Meta:
-        model = Post
-        fields = ['title', 'description', 'post_type', 'file']        
-
-
 
 
 
