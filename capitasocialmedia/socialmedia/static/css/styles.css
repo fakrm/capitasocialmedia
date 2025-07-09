@@ -178,38 +178,13 @@ h1::after {
 
 
 
-.password-toggle {
-  cursor: pointer;
-  background-color: #f0f0f0; /* Slightly darker for better contrast */
-  border-left: none;
-  transition: all 0.3s ease;
-}
 
-.password-toggle:hover {
-  background-color: #e0e0e0; /* Darker on hover */
-}
 
-.input-group .form-control {
-  border-right: none;
-}
 
-.input-group .form-control,
-.form-control {
-  width: 100%;
-  box-sizing: border-box;
-}
 
-.input-group .form-control:focus + .password-toggle {
-  border-color: var(--primary-color);
-}
 
-/* Make sure the icon is vertically centered */
-.password-toggle i {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #444; /* Darker icon color for better visibility */
-}
+
+
 
 /* Image and Video Styling */
 .card-body img,

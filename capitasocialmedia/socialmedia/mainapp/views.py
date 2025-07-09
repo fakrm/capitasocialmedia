@@ -72,7 +72,7 @@ def home(request):
             followed_posts = Post.objects.filter(
                 Q(user__profile__in=followingids) | Q(user=request.user)
             )
-            
+
             shared_posts = Post.objects.filter(id__in=shared_postids)
 
             print("My shared posts count:", shared_posts.count())
@@ -152,25 +152,25 @@ def user_search(request):
                
     
 
-def explore(request):
-    # Your code for the explore page
-    return render(request, 'explore.html')
+
 def register(request):
     if request.method == 'POST':
+        #Use form to get data
         form = UserRegisterForm(request.POST)
         if form.is_valid():
+            #We will get the email that user sets
             reqemail=request.POST.get('email')
              # if email== reqemail:
 
             if User.objects.filter(email=reqemail).exists():
-                messages.error(request, 'Email already exists. Please use a different email.')
+                messages.error(request, 'Email already exists. Use a different email.')
                 return redirect('register')
-            
+            #Email was ok
             user = form.save()
             
            
-            # Create profile
-            token = str(uuid.uuid4())
+            # Create new profile
+            token = str(uuid.uuid4())#Genertaes random number 
             Profile.objects.create(user=user, verification_token=token)
             
             # Send verification email
@@ -179,13 +179,13 @@ def register(request):
             )
             send_mail(
                 'Verify your email',
-                f'Please click the link to verify your email: {verification_url}',
+                f'Click on the link to verify your email: {verification_url}',
                 settings.EMAIL_HOST_USER,
                 [user.email],
                 fail_silently=False,
             )
             
-            messages.success(request, 'Account created! Please verify your email.')
+            messages.success(request, 'Account created! Verify your email to login.')
             return redirect('login')
     else:
         form = UserRegisterForm()
@@ -200,8 +200,8 @@ def verify_email(request, token):
         messages.success(request, 'Email verified! You can now log in.')
         return redirect('login')
     else:
-        messages.error(request, 'Invalid verification token.')
-        return redirect('home')
+        messages.error(request, 'There was an error.')
+        return redirect('login')
     
 
 
