@@ -71,14 +71,14 @@
 
 <script>
      function PasswordVisibility(inputId, iconElement) {
-        const passwordInput = document.getElementById(inputId);
+        const passwordin = document.getElementById(inputId);
         const icon = iconElement.querySelector('i');
         
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
+        if (passwordin.type === 'password') {
+            passwordin.type = 'text';
              icon.textContent = '🙉';
         } else {
-            passwordInput.type = 'password';
+            passwordin.type = 'password';
             icon.textContent = '🙈';
         }
     }

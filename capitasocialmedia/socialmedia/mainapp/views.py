@@ -211,105 +211,33 @@ def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
+            username = request.POST.get('username')  
+            password = request.POST.get('password')
             user = authenticate(username=username, password=password)
             
             if user is not None:
                 profile = Profile.objects.get(user=user)
                 if profile.email_verified:
                     login(request, user)
-                    remember_me = request.POST.get('remember_me', None)
-                    response = redirect('home')
-
-                    if remember_me:
-                        request.session.set_expiry(1209600)  # 2 weeks
-
-                        # Load existing remembered credentials
-                        credentials_raw = request.COOKIES.get('remembered_credentials', '[]')
-                        try:
-                            decoded = base64.b64decode(credentials_raw.encode()).decode()
-                            remembered_credentials = json.loads(decoded)
-                        except Exception:
-                            remembered_credentials = []
-
-                        # Update or add current user
-                        updated = False
-                        for cred in remembered_credentials:
-                            if cred["username"] == username:
-                                cred["password"] = password
-                                updated = True
-                                break
-                        if not updated:
-                            remembered_credentials.append({"username": username, "password": password})
-
-                        # Save back to cookie
-                        encoded = base64.b64encode(json.dumps(remembered_credentials).encode()).decode()
-                        response.set_cookie(
-                            'remembered_credentials',
-                            encoded,
-                            max_age=1209600,
-                            httponly=True,
-                            samesite='Strict'
-                        )
-                    else:
-                        request.session.set_expiry(0)  # session ends on browser close
-
-                        # Remove credentials if present
-                        credentials_raw = request.COOKIES.get('remembered_credentials', '[]')
-                        try:
-                            decoded = base64.b64decode(credentials_raw.encode()).decode()
-                            remembered_credentials = json.loads(decoded)
-                        except Exception:
-                            remembered_credentials = []
-
-                        remembered_credentials = [
-                            c for c in remembered_credentials if c["username"] != username
-                        ]
-
-                        if remembered_credentials:
-                            encoded = base64.b64encode(json.dumps(remembered_credentials).encode()).decode()
-                            response.set_cookie(
-                                'remembered_credentials',
-                                encoded,
-                                max_age=1209600,
-                                httponly=True,
-                                samesite='Strict'
-                            )
-                        else:
-                            response.delete_cookie('remembered_credentials')
-
+                    
+                   
+                
                     messages.success(request, f'Welcome, {username}!')
-                    return response
+                    return redirect('home')
                 else:
                     messages.warning(request, 'Please verify your email before logging in.')
             else:
                 messages.error(request, 'Invalid username or password.')
-    else:
-        # GET request — pre-fill form with last remembered credentials
-        encoded = request.COOKIES.get('remembered_credentials', None)
-        if encoded:
-            try:
-                decoded = base64.b64decode(encoded.encode()).decode()
-                credentials = json.loads(decoded)
-                last_cred = credentials[-1]
-                form = UserLoginForm(initial={
-                    'username': last_cred.get('username', ''),
-                    'password': last_cred.get('password', '')
-                })
-                form.fields['username'].widget.attrs.update({'data-remembered': 'true'})
-            except Exception:
-                form = UserLoginForm()
-        else:
-            form = UserLoginForm()
 
+    else:
+         form = UserLoginForm()            
     return render(request, 'login.html', {'form': form})
 
 
 def user_logout(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
-    return redirect('home')
+    return redirect('login')
 
 @login_required
 def profile(request):
