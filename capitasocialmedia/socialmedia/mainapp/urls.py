@@ -5,8 +5,11 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
+    
     path('logout/', views.user_logout, name='logout'),
+
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+
     path('search/', views.user_search, name='user_search'),
     path('profile/', views.profile, name='profile'),
     path('create-post/', views.create_post, name='create_post'),
@@ -28,11 +31,27 @@ urlpatterns = [
     path('accept-request/<int:request_id>/', views.accept_request, name='accept_request'),
     path('reject-request/<int:request_id>/', views.reject_request, name='reject_request'),
 
-    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='password_reset.html'), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
-    
+path('password_reset/', 
+     auth_views.PasswordResetView.as_view(
+         email_template_name='password_reset_email.html',  
+         template_name='password_reset.html',
+         subject_template_name='password_reset_subject.txt'
+         
+     ), 
+     name='password_reset'),
+#path('password_reset/',
+#  auth_views.PasswordResetView.as_view(template_name='password_reset.html'),
+#  name='password_reset'),
+path('password_reset/done/',
+      auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'),
+        name='password_reset_done'),
+path('reset/<uidb64>/<token>/',
+      auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'),
+        name='password_reset_confirm'),
+path('reset/done/', 
+     auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'),
+       name='password_reset_complete'),
+
     path('inbox/splash/', views.splash, name='splash'),
      path('inbox/', views.inbox, name='inbox_content'),
     path('conversation/<int:conversation_id>/', views.conversation_view, name='conversation_view'),
