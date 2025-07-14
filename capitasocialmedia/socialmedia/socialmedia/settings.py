@@ -16,6 +16,15 @@ from django.contrib.messages import constants as messages
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+TIME_ZONE = 'Europe/Amsterdam'
+
+USE_I18N = True
+
+USE_L10N = True
+
+USE_TZ = True
+
 #this is for bootsttrap for danger
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',     
@@ -152,8 +161,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'miasafaei1376@gmail.com'  
 EMAIL_HOST_PASSWORD = 'nrxh bfjc ymbq sxcz'  
 
-SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
-SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript from accessing the cookie
+
 
 LOGIN_URL = '/login/'

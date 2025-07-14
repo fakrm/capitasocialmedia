@@ -2,9 +2,11 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.splash, name='splash'),
+     path('login/', views.user_login, name='login'),
+    path('home/', views.home, name='home'),
     path('register/', views.register, name='register'),
-    path('login/', views.user_login, name='login'),
+   
     
     path('logout/', views.user_logout, name='logout'),
 
@@ -52,8 +54,8 @@ path('reset/done/',
      auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'),
        name='password_reset_complete'),
 
-    path('inbox/splash/', views.splash, name='splash'),
-     path('inbox/', views.inbox, name='inbox_content'),
+     
+     
     path('conversation/<int:conversation_id>/', views.conversation_view, name='conversation_view'),
     path('search-users/', views.search_users, name='search_users'),
     path('new-conversation/<int:user_id>/', views.new_conversation, name='new_conversation'),
@@ -63,7 +65,7 @@ path('reset/done/',
     
     path('post/<int:post_id>/like/', views.toggle_like, name='toggle_like'),
     path('post/<int:post_id>/share/', views.share_post, name='share_post'),
-     path('socialmedia/' ,views.socialmedia , name='socialmedia'),
+    
      path('delete_account/', views.delete_account, name='delete_account'),
     path('confirm_delete/<str:uidb64>/<str:token>/', views.confirm_deletion, name='confirm_deletion'),
 

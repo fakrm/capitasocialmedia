@@ -48,6 +48,12 @@ from .models import Profile
 from itertools import chain
 from operator import attrgetter
 
+
+@login_required
+def splash(request):
+    return render(request, 'splash.html')
+
+
 @login_required
 def home(request):
 
@@ -60,39 +66,40 @@ def home(request):
             ).values_list('following',flat=True)#just give this column not all columns of table
             print(followingids)
 
-            shared_postids = Share.objects.filter(
-                    Q(user__profile__in=followingids) | Q(user=request.user) | Q(user__profile__private_account=False)
-            ).values_list('post_id', flat=True)
-            print(shared_postids)
-
-        
-    
-            
+               
             # gets post that are following or from the current user
             followed_posts = Post.objects.filter(
-                Q(user__profile__in=followingids) | Q(user=request.user)
-            )
+                Q(user__in=followingids) | Q(user=request.user)
+            ).order_by('-created_at')
 
-            shared_posts = Post.objects.filter(id__in=shared_postids)
 
-            print("My shared posts count:", shared_posts.count())
-            
+
             public_posts = Post.objects.filter(
                 #if user is not a following user and is not a current user but the profile is not private
                 ~Q(user__profile__in=followingids),
                 ~Q(user=request.user),
                 user__profile__private_account=False
-            )
+            ).order_by('-created_at')
+
+            shared_postids = Share.objects.filter(
+                    Q(user__profile__in=followingids) | Q(user=request.user) | Q(user__profile__private_account=False)
+            ).values_list('post_id', flat=True)
+            print(shared_postids)
+
+
+            shared_posts = Post.objects.filter(id__in=shared_postids).order_by('-created_at')
+
+            print("My shared posts count:", shared_posts.count())
 
 
             all_posts_list = list(followed_posts) + list(public_posts)+ list(shared_posts)
-
 
 
             return render(request, 'home.html', {'posts': all_posts_list})
 
 
 @login_required
+
 def user_search(request):
             #Look for search item
             if request.user.is_authenticated:
@@ -108,38 +115,38 @@ def user_search(request):
                 users = User.objects.none()
 
             for user in users:
-                 user_profile = user  
-                 profile = user_profile.profile
+                 
+                 profile = user.profile
             
             # Check if the current user is following this profile
-            is_following = False
-            has_requested = False
+                 is_following = False
+                 has_requested = False
             
-            if request.user.is_authenticated:
-                is_following = Follower.objects.filter(
-                    follower=request.user.profile, 
-                    following=profile
-                ).exists()
-                
-                has_requested = FollowRequest.objects.filter(
-                    from_user=request.user.profile,
-                    to_user=profile
-                ).exists()
+                 if request.user.is_authenticated:
+                        is_following = Follower.objects.filter(
+                            follower=request.user.profile, 
+                            following=profile
+                        ).exists()
+                        
+                        has_requested = FollowRequest.objects.filter(
+                            from_user=request.user.profile,
+                            to_user=profile
+                        ).exists()
             
             # Get user posts (filter if private and not following)
-            if request.user == user_profile or is_following or not profile.private_account:
-                user_posts = Post.objects.filter(user=user_profile).order_by('-created_at')
-            else:
-                user_posts = []
+            # if request.user == user_profile or is_following or not profile.private_account:
+            #     user_posts = Post.objects.filter(user=user_profile).order_by('-created_at')
+            # else:
+            #     user_posts = []
             
             # Get follower count
             follower_count = Follower.objects.filter(following=profile).count()
             following_count = Follower.objects.filter(follower=profile).count()
             
             context = {
-                'profile_user': user_profile,
+                # 'profile_user': user_profile,
                 'profile': profile,
-                'user_posts': user_posts,
+                # 'user_posts': user_posts,
                 'is_following': is_following,
                 'has_requested': has_requested,
                 'follower_count': follower_count,
@@ -275,7 +282,7 @@ def create_post(request):
             # Check if post is a text post
             if post.post_type == 'text':
                 post.file = None
-                post.text_content = request.POST.get('text_content')
+                post.text_content = request.POST.get('text_content')#it is null which is worng check later???
             else:
                     file = request.FILES.get('file')
                     if file:
@@ -395,14 +402,21 @@ def create_text_post(request):
 def download_file(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     file_path = post.file.path
+    file_name = post.file.name
+    print(file_path)
+    print(file_name)
     
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type='application/octet-stream')
-            response['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+    if os.path.exists(file_path):#if file exixts 
+        with open(file_path, 'rb') as fp:
+            #open as reading
+            response = HttpResponse(fp.read())
+            #form the http just extract the last component
+            file_name=os.path.basename(file_path)
+
+            response['Content-Disposition'] = f'attachment; filename={file_name}'
             return response
     else:
-        messages.error(request, 'File not found.')
+        messages.error(request, 'Cannot find the file path.')
         return redirect('home')
 
 
@@ -569,48 +583,33 @@ class MessageForm(forms.ModelForm):
 
 
 
-@login_required
-def inbox(request):
-    # Get all conversations this user is part of
-    conversations = Conversation.objects.filter(
-        participants=request.user
-    ).annotate(
-        last_message_time=Max('messages__created_at'),
-        unread_count=Count('messages', filter=Q(messages__is_read=False) & ~Q(messages__sender=request.user))
-    ).order_by('-last_message_time')
-    
-    context = {
-        'conversations': conversations,
-    }
-    return render(request, 'inbox.html', context)
 
 @login_required
+
 def conversation_view(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id=conversation_id, participants=request.user)
+    #Find conversation by id
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    #conversation=conversation.object.filter(id=conversation_id).first()
     
-    # Mark unread messages as read
-    Message.objects.filter(
-        conversation=conversation, 
-        is_read=False
-    ).exclude(sender=request.user).update(is_read=True)
-    
-    # Get messages
+    # Retrieve all messages
     messages = conversation.messages.all()
     
-    # Handle new message form
+    # New messages
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
             message = form.save(commit=False)
             message.conversation = conversation
+            
             message.sender = request.user
             message.save()
             return redirect('conversation_view', conversation_id=conversation.id)
     else:
         form = MessageForm()
+        
     
     context = {
-        'conversation': conversation,
+      
         'messages': messages,
         'form': form,
         'other_user': conversation.get_other_participant(request.user),
@@ -619,16 +618,18 @@ def conversation_view(request, conversation_id):
     return render(request, 'conversation.html', context)
 
 @login_required
+
 def search_users(request):
     query = request.GET.get('q', '')
+    print(query)
     if query:
         users = User.objects.filter(
-            Q(username__icontains=query) | 
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query)
-        ).exclude(id=request.user.id)
+            Q(username__icontains=query) 
+           
+        ).exclude(id=request.user.id)#you cannot message yourself
+        print(users)
     else:
-        users = User.objects.none()
+        users = User.objects.none()#no match
     
     context = {
         'users': users,
@@ -646,14 +647,18 @@ def new_conversation(request, user_id):
     
     if conversations.exists():
         # If conversation exists, redirect to it
+        #First is needed since there maybe multltiple conversations and we just wnat the first one. 
         return redirect('conversation_view', conversation_id=conversations.first().id)
+   
+    
     else:
         # Create new conversation
-        conversation = Conversation.objects.create()
+        #conversation = Conversation.objects.create(request.user,other_user)
+        conversation = Conversation.object.create()
         conversation.participants.add(request.user, other_user)
         return redirect('conversation_view', conversation_id=conversation.id)
 
-# Add this context processor function
+
 def unread_message_count(request):
     if request.user.is_authenticated:
         count = Message.objects.filter(
@@ -664,8 +669,6 @@ def unread_message_count(request):
         return {'unread_message_count': count}
     return {'unread_message_count': 0}
 
-def splash(request):
-    return render(request, 'splash.html')
 
 
 
@@ -759,8 +762,6 @@ def share_post(request, post_id):
 
 
 
-def socialmedia(request):
-    return render(request, 'socialmedia.html')
 
 def delete_account(request):
     if request.method != 'POST':
