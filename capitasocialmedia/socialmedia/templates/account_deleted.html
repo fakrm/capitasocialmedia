@@ -1,11 +1,37 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <h2>Account Deleted</h2>
-    <div class="alert alert-success">
-        Your account has been successfully deleted.
+
+
+
+  {% extends "base.html" %}
+  {% load widget_tweaks %}
+  
+  {% block navigation %}{% endblock %}
+  {% block content %}
+   <div class="row justify-content-center"> 
+
+            <div class="col-md-6"> 
+
+                <div class="card"> 
+                    <div class="card-header">
+                        <p>Confirm Account Deletion</p>
+
+
+                    </div>
+
+                    <div class="card-body">
+                         <a href="{% url 'register' %}" class="btn btn-primary">Register a new account</a>
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
     </div>
-    <p>We're sorry to see you go. If you wish to create a new account in the future, you'll need to register again.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
-</div>
-{% endblock %}
+
+    
+
+       
+{% endblock %}       

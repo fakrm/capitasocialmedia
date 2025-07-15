@@ -16,12 +16,12 @@
                     By <a href="{% url 'profile_detail' post.user.username %}" class="text-decoration-none text-primary">
                       {{ post.user.username }}
                     </a> on {{ post.created_at|date:"F d, Y" }}
-                    {{ post.id }}<!--increaments by one -->
+                    {{ post.id }}
                     
                   </small>
                   
             </div>
-            <div class="card-body">
+            <div class="card-body ">
                 {% if post.post_type == 'image' %}
                 <img src="{{ post.file.url }}" class="img-fluid" alt="{{ post.title }}">
                 {% elif post.post_type == 'video' %}
@@ -29,10 +29,14 @@
                     <source src="{{ post.file.url }}" type="video/mp4">
                    
                 </video>
-                {% elif post.post_type == 'text' and post.text_content %}
-                <div class="text-content">{{ post.text_content }}</div>
+                {% elif post.post_type == 'text'  %}
+                <div class="text-content">{{ post.description }}</div>
+                
                 {% endif %}
-                <p class="mt-2">{{ post.description }}</p>
+                {% if post.description and not post.post_type == "text" %}
+                        <p class="mt-2">{{ post.description }}</p>
+                {% endif %}
+                
                 
                 <!-- Post interactions: likes, comments, shares -->
                 <div class="interaction-buttons pt-3 d-flex justify-content-between">
@@ -68,7 +72,7 @@
                 {% else %}
                     <span class="btn btn-sm btn-secondary disabled" style="margin-right: 100px;">No Download</span>
                 {% endif %}
-               <!-- <a href="{% url 'post_detail' post.id %}" class="btn btn-sm btn-primary">View Details</a>-->
+               
             </div>
             
         </div>
@@ -98,12 +102,12 @@
                                 <source src="{{ post.file.url }}" type="video/mp4">
                             </video>
                         </div>
-                        {% elif post.post_type == 'text' and post.text_content %}
-                        <div class="text-content mb-3 mt-3">{{ post.text_content }}</div>
+                        {% elif post.post_type == 'text' %}
+                        <div class="text-content ">{{ post.description }}</div>
                         {% endif %}
                         
-                        {% if post.description %}
-                        <p class="mt-2">{{ post.description }}</p>
+                        {% if post.description and not post.post_type == "text" %}
+                        <p class="text-content">{{ post.description }}</p>
                         {% endif %}
                     </div>
                 

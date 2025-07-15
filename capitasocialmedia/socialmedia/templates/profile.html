@@ -7,9 +7,9 @@
             <div class="card-header">
                 <h3>{{ user.username }}</h3>
             </div>
-            <div class="card-body">
+            <div class="card-body card-body-prof">
                 {% if user.profile.profile_pic %}
-                <img src="{{ user.profile.profile_pic.url }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                <img src="{{ user.profile.profile_pic.url }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px; max-height: 150px;">
                 {% else %}
                 <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" 
                    style="width: 150px; height: 150px; max-width: 150px; background-color: #6c757d; color: white; font-size: 3rem; ">
@@ -18,6 +18,14 @@
                 {% endif %}
                 <p>{{ user.profile.bio }}</p>
                <!-- <p>Email: {{ user.email }}</p>--> 
+                <div class="mt-5">
+                            <a href="{% url 'followers_list' user.username %}" class="text-decoration-none me-5">
+                                <strong>{{ follower_count }}</strong> followers
+                            </a>
+                            <a href="{% url 'following_list' user.username %}" class="text-decoration-none" style="margin-left: 130px;">
+                                <strong>{{ following_count }}</strong> following
+                            </a>
+                </div>
                 
                
 
@@ -141,7 +149,7 @@
             </form>
         </div>
             <div class="modal-footer  "  >
-                <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to delete your account? ');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger me-5">Delete Account</button>
                     <button type="button" class="btn btn-primary  " data-bs-dismiss="modal">Close</button>

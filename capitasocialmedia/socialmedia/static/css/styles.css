@@ -1,13 +1,12 @@
 /* Main Variables */
 :root {
-  --primary-color: #3f45b6; /* Darker blue for better contrast */
-  --primary-hover: #2a2f9a; /* Even darker blue for hover states */
-  --secondary-color: #7378e8; /* Adjusted secondary color */
-  --light-bg: #f8f9fa;
-  --dark-bg: grey; /* Darker background for better contrast */
-  --text-color: #222; /* Darker text for better readability */
+  --primary-color: #3f45b6;
+  --primary-hover: #2a2f9a;
+  --secondary-color: #7378e8; 
+
+  --text-color: #222; 
   --border-radius: 8px;
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+  --box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.15); 
   --transition: all 0.3s ease;
 }
 
@@ -15,7 +14,7 @@
 body {
   font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: var(--text-color);
-  background-color: #f0f2f5; /* Slightly darker for better contrast with cards */
+  background-color: #e3e4e7; 
   padding-top: 8px;
   line-height: 1.6;
 }
@@ -24,7 +23,7 @@ body {
   max-width: 1200px;
 }
 
-/* Typography */
+
 
 
  h1, h2, h3, h4, h5, h6 {
@@ -48,69 +47,52 @@ h1::after {
   height: 4px;
   width: 60px;
   background: lightseagreen;
-  border-radius: 2px;
+  
 }
 
 /* Navbar Styling */
 .navbar {
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  padding: 3px 0 ;
-  background-color: #fff; 
+ width: 100%;
+ 
+  background-color: lightblue;
+  color: #0f0f0f !important;
+
+}
+.nav-link{
+  font-size: 20px;
+ 
+}
+.nav-link:hover
+ {
+  background: cornflowerblue;
+  box-shadow: var(--box-shadow);
+  transform: translateY(-5px);
 }
 
-.navbar-brand {
-  font-weight: 800;
-  font-size: 1.5rem;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: var(--transition);
-}
 
-.navbar-dark .navbar-nav .nav-link {
-  color: rgba(255,255,255,0.9); /* Improved contrast from 0.85 */
-  font-weight: 600;
-  padding: 8px 1px;
-  border-radius: 4px;
-  margin-right: 20px;
-  transition: var(--transition);
-}
-
-.navbar-dark .navbar-nav .nav-link:hover,
-.navbar-dark .navbar-nav .nav-link:focus {
-  color: #fff;
-  background-color: rgba(255,255,255,0.15); /* Improved contrast from 0.1 */
-}
-
-.navbar-dark .navbar-nav .active > .nav-link {
-  color: #fff;
-  background-color: var(--primary-color);
-}
 
 /* Button Styling */
-.btn {
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  padding: 8px 20px;
-  transition: var(--transition);
-}
 
-.btn-primary {
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  border: none;
-  color: #fff; /* Ensure text is white for contrast */
-}
 
 .btn-primary:hover,
 .btn-primary:focus {
   background: linear-gradient(45deg, var(--primary-hover), var(--primary-color));
-  box-shadow: 0 4px 10px rgba(63, 69, 182, 0.4); /* Matching new primary color */
-  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+  transform: translateY(-5px);
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background: darkred;
+  box-shadow: var(--box-shadow);
+  transform: translateY(-5px);
 }
 
 .btn-sm {
   padding: 5px 15px;
   font-size: 0.85rem;
+ 
+ 
 }
 
 /* Card Styling */
@@ -122,8 +104,8 @@ h1::after {
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18); /* Stronger shadow on hover */
+  transform: translateY(-20px);
+  box-shadow: var(--box-shadow);
 }
 
 .post-card {
@@ -162,6 +144,8 @@ h1::after {
   max-height: 470px; /* Prevents body from growing too large */
 }
 
+
+
 .card-body.login {
   padding: 10px;
   background-color: whitesmoke; /* Explicit white background */
@@ -188,15 +172,46 @@ h1::after {
 
 
 /* Image and Video Styling */
+/* More specific selectors first */
+.card-body.card-body-prof img {
+  width: 100%;
+  max-height: 150px !important;
+  min-height: 150px !important;
+}
+
+
+
+
 .card-body img,
 .card-body video {
+ width: 100%;
+  max-height: 280px;
+  min-height: 280px;
+}
+
+.card-body-search img {
+
+ width: auto;
+  max-height: 50px !important;
+  min-height: 50px !important;
+  border-radius: 50%;
+}
+
+.card-body-search .rounded-circle {
+
+ width: auto;
+  max-height: 50px !important;
+  min-height: 50px !important;
+  border-radius: 50%;
+}
+
+.card-body .text-content {
+   width: 100%;
  
-  width: 100%;
-  height: auto;
-  
-  
+  max-height: 340px;
+  min-height: 340px;
+
  
-  
 }
 
 /* Form Styling */
@@ -262,90 +277,15 @@ textarea.form-control {
   margin-bottom: 30px;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  body {
-      padding-top: 65px;
-  }
-  
-  h1 {
-      font-size: 1.8rem;
-  }
-  
-  .card-header {
-      padding: 12px 15px;
-  }
-  
-  .card-body {
-      padding: 15px;
-  }
-  
-  .navbar-brand {
-      font-size: 1.3rem;
-  }
-}
-
-/* Post Grid Layout */
-.row > [class*="col-"] {
-  margin-bottom: 0px;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--secondary-color);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
-}
 
 
 
 
 
 
-.search-container {
-  position: relative;
-  margin: 0 15px;
-}
 
-.search-box {
-  display: flex;
-  align-items: center;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid blue;
-  background: lightblue;
-}
 
-.search-box input {
-  border: none;
-  padding: 8px 15px;
-  outline: none;
-  background: transparent;
-  width: 200px;
-}
 
-.search-button {
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  color: #555;
-}
-
-.search-button:hover {
-  color: #000;
-}
 
 /* Style for search results */
 .user-list {
@@ -387,21 +327,7 @@ textarea.form-control {
 }
 
 
-/* Toggle Switch Style */
-.switch {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-  z-index: 1000;
-}
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+
 .slider {
   position: absolute;
   cursor: pointer;

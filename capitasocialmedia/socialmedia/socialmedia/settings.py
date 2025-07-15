@@ -17,13 +17,8 @@ from django.contrib.messages import constants as messages
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-TIME_ZONE = 'Europe/Amsterdam'
 
-USE_I18N = True
 
-USE_L10N = True
-
-USE_TZ = True
 
 #this is for bootsttrap for danger
 MESSAGE_TAGS = {
@@ -126,8 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 
 USE_TZ = True

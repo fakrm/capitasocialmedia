@@ -11,22 +11,32 @@
     <link rel="stylesheet" href="{% static 'css/chatbox.css' %}">
      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     <div class="row justify-content-center mt-5">
       <div class="col-md-6">
               <div class="card">
-                 <div class="card-header">
+                 <div class="card-header d-flex justify-content-between align-items-center">
                 
         
                     
                     <a class="nav-link" href="{% url 'home' %}">
                         <i class="fas fa-home me-1 "></i>  Home
                     </a>
-                
-                    
-           
-            </div> 
+
+                  <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Chat-Menu
+                                </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                               <li><a class="dropdown-item" href="#" data-bs-toggle="collapse" data-bs-target="#conversationsSection">Existing Conversations</a></li>
+                                
+                            </ul>
+                    </div>
+
+            </div>
+
 
 
 
@@ -47,11 +57,11 @@
                         value="{{ query }}" 
                         placeholder="Search by username" 
                         class="form-control"
-                        aria-describedby="basic-addon2"
+                       
                       
                     >
                     <div class="input-group-append"> 
-                        <button type="button" class="btn btn-outline-secondary" >
+                        <button type="submit" class="btn btn-outline-secondary" >
                             <i class="fas fa-search"></i> Search
                         </button>
                     </div>
@@ -82,9 +92,7 @@
                                         </div>
                                         <div class="user-meta">
                                             <p class="user-name">{{ user.username }}</p>
-                                            {% if user.first_name or user.last_name %}
-                                                <p class="user-details">{{ user.first_name }} {{ user.last_name }}</p>
-                                            {% endif %}
+                                            
                                         </div>
                                     </div>
                                     
@@ -113,7 +121,30 @@
                     </div>
                 </div>
             {% endif %}
-            
+
+            {% if existing_conversations %}
+                 <div class="collapse mt-4" id="conversationsSection">
+                    <div class="card-header">
+                        <h5 class="mb-0">Existing Conversations</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for conversation in existing_conversations %}
+                                <li class="list-group-item">
+                                    {% for user_in_conversation in user_in_conversations%}
+                                     {% if forloop.parentloop.counter0 == forloop.counter0 %}
+                                    <a href="{% url 'conversation_view' conversation.id %}">{{user_in_conversation.username}}</a>
+                                    
+                                     {% endif %}
+                                    {% endfor %}
+
+                                </li>
+                            {% endfor %}
+                           
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
 
         </div>
               

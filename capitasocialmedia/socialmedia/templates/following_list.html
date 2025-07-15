@@ -1,20 +1,31 @@
-<!-- following_list.html -->
+
 {% extends 'base.html' %}
 
 {% block content %}
 <div class="container my-4">
-    <h2>{{ profile_user.username }} is Following</h2>
+    {% if not profile_user.profile.private_account %}
+    <h2>{{ profile_user.username | title }} is Following</h2>
     
-    <div class="list-group">
+    <div class="list-group w-50">
         {% for follow in following %}
         <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+            <div class="d-flex align-items-center">
                 {% if follow.following.profile_pic %}
-                <img src="{{ follow.following.profile_pic.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px;" alt="{{ follow.following.user.username }}">
+                
+                  <img src="{{ follow.following.profile_pic.url }}" class="rounded-circle me-2" style="width: 60px; height: 60px;" alt="{{ follow.follower.user.username }}">
+                {% else %}
+                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-3  text-secondary" style="width: 50px; height: 50px;">
+                        <span style="font-size: 24px;">{{ follow.follower.user.username|first|upper }}</span>
+                    </div>
                 {% endif %}
-                <a href="{% url 'profile_detail' follow.following.user.username %}">{{ follow.following.user.username }}</a>
+                {% if follow.following.user.username == request.user.username %}
+                <a href="{% url 'profile'  %}" style="margin-left: 350px;">{{request.user.username}}</a>
+                {% else %}
+                <a href="{% url 'profile_detail' follow.following.user.username %}" style="margin-left: 350px;">{{ follow.following.user.username }}</a>
+                {% endif %}
             </div>
             
+            <!--
             {% if request.user != follow.following.user %}
                 {% if user_following_them %}
                 <a href="{% url 'unfollow_user' follow.following.user.username %}" class="btn btn-sm btn-outline-danger">Unfollow</a>
@@ -22,12 +33,16 @@
                 <a href="{% url 'follow_user' follow.following.user.username %}" class="btn btn-sm btn-primary">Follow</a>
                 {% endif %}
             {% endif %}
+            -->
         </div>
         {% empty %}
         <div class="alert alert-info">Not following anyone yet.</div>
         {% endfor %}
     </div>
-    
-    <a href="{% url 'profile_detail' profile_user.username %}" class="btn btn-secondary mt-3">Back to Profile</a>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-lock-fill"></i> This account is private. Follow to see who they are following.
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

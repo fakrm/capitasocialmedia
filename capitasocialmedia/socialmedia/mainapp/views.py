@@ -26,7 +26,7 @@ from .forms import MessageForm
 from django.db.models import Max, Count, Q
 from django.shortcuts import render
 
-
+from .forms import DeleteAccount, DeleteAccountPassword
 from .models import Post, Comment, Like
 
 from django.utils.http import urlsafe_base64_decode
@@ -98,7 +98,7 @@ def home(request):
             return render(request, 'home.html', {'posts': all_posts_list})
 
 
-@login_required
+
 
 def user_search(request):
             #Look for search item
@@ -246,7 +246,7 @@ def user_logout(request):
     messages.info(request, 'You have been logged out.')
     return redirect('login')
 
-@login_required
+
 def profile(request):
     
     if request.method == 'POST':
@@ -261,16 +261,22 @@ def profile(request):
       
        
     user_posts = Post.objects.filter(user=request.user).order_by('-created_at')
+
+    follower_count = Follower.objects.filter(following=request.user.profile).count()
+    following_count = Follower.objects.filter(follower=request.user.profile).count()
     context = {
         'form': form,
         'user_posts': user_posts,
+        'follower_count': follower_count,
+        'following_count': following_count
      
         
 
     }
+   
     return render(request, 'profile.html', context)
 
-@login_required
+
 def create_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
@@ -316,7 +322,7 @@ def delete_post(request, post_id):
 import base64
 from django.core.files.base import ContentFile
 
-@login_required
+
 def edit_image(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
@@ -327,7 +333,7 @@ def edit_image(request, post_id):
     
     return render(request, 'edit_image.html', {'post': post})
 
-@login_required
+
 def toggle_privacy(request):
    if request.method == 'POST':
        profile = request.user.profile
@@ -346,7 +352,6 @@ def toggle_privacy(request):
 
 
 
-@login_required
 def save_edited_image(request, post_id):
     if request.method != 'POST':
         return redirect('home')
@@ -380,7 +385,7 @@ def save_edited_image(request, post_id):
     
     return redirect('profile')
 
-@login_required
+
 def create_text_post(request):
     if request.method == 'POST':
         # Handle the form submission
@@ -398,7 +403,7 @@ def create_text_post(request):
     return render(request, 'create_text_post.html')
 
 
-@login_required
+
 def download_file(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     file_path = post.file.path
@@ -422,7 +427,7 @@ def download_file(request, post_id):
 
 
 
-@login_required
+
 def follow_user(request, username):
     user_to_follow = get_object_or_404(User, username=username)
     from_profile = request.user.profile
@@ -446,7 +451,7 @@ def follow_user(request, username):
     return redirect('profile_detail', username=username)
 
 
-@login_required
+
 def unfollow_user(request, username):
     user_to_unfollow = get_object_or_404(User, username=username)
     from_profile = request.user.profile
@@ -460,7 +465,7 @@ def unfollow_user(request, username):
    #gets back to the serach page with search item
     return redirect(f'/search/?q={username}')
 
-@login_required
+
 def cancel_request(request, username):
     user_to_cancel = get_object_or_404(User, username=username)
     from_profile = request.user.profile
@@ -472,13 +477,13 @@ def cancel_request(request, username):
     messages.success(request, f"Follow request to {username} canceled.")
     return redirect('profile_detail', username=username)
 
-@login_required
+
 def follow_requests(request):
     # get all pending follow requests for the current user, sort based on time created
     pending_requests = FollowRequest.objects.filter(to_user=request.user.profile).order_by('-created_at')
     return render(request, 'follow_requests.html', {'requests': pending_requests})
 
-@login_required
+
 def accept_request(request, request_id):
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
     
@@ -491,7 +496,7 @@ def accept_request(request, request_id):
     messages.success(request, f"You accepted {follow_request.from_user.user.username}'s follow request.")
     return redirect('follow_requests')
 
-@login_required
+
 def reject_request(request, request_id):
     #found the request in DB
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
@@ -501,7 +506,7 @@ def reject_request(request, request_id):
     messages.success(request, f"You rejected {follow_request.from_user.user.username}'s follow request.")
     return redirect('follow_requests')
 
-@login_required
+
 def profile_detail(request, username):
     user_profile = get_object_or_404(User, username=username)
     profile = user_profile.profile
@@ -543,23 +548,27 @@ def profile_detail(request, username):
     
     return render(request, 'profile_detail.html', context)
 
-@login_required
+
 def followers_list(request, username):
     user = get_object_or_404(User, username=username)
+
     profile = user.profile
+    #get things where this profile is following
     followers = Follower.objects.filter(following=profile).order_by('-created_at')
     
     context = {
-        'profile_user': user,
+        'user': user,
         'followers': followers,
     }
     
     return render(request, 'followers_list.html', context)
 
-@login_required
+
 def following_list(request, username):
     user = get_object_or_404(User, username=username)
+
     profile = user.profile
+    #Get things where where this profile is follower
     following = Follower.objects.filter(follower=profile).order_by('-created_at')
     
     context = {
@@ -584,7 +593,7 @@ class MessageForm(forms.ModelForm):
 
 
 
-@login_required
+
 
 def conversation_view(request, conversation_id):
     #Find conversation by id
@@ -630,15 +639,33 @@ def search_users(request):
         print(users)
     else:
         users = User.objects.none()#no match
-    
+    other_participants = []
+    existing_conversations = Conversation.objects.filter(participants=request.user)
+    messages = Message.objects.filter(conversation__in=existing_conversations)
+    for existing_conversation in existing_conversations:
+        user_in_conversations = existing_conversation.get_other_participant(request.user)
+        print("other participants", user_in_conversations)
+        other_participants.append(user_in_conversations)
+
+    #other_user_in_existing_conversation= existing_conversations.filter(participants__in=users).exclude(participants=request.user)
+    # other_user_in_existing_conversation = existing_conversations.object.filter(
+    # participants=request.user
+    #  )
+    #print("Other user in an exisiting conversation",other_user_in_existing_conversation)
+   
     context = {
         'users': users,
         'query': query,
+        'existing_conversations': existing_conversations,
+        #'other_user_in_existing_conversation': other_user_in_existing_conversation
+        'user_in_conversations':other_participants,
+        'messages':messages
     }
     
+
     return render(request, 'search_users.html', context)
 
-@login_required
+
 def new_conversation(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
     
@@ -654,28 +681,13 @@ def new_conversation(request, user_id):
     else:
         # Create new conversation
         #conversation = Conversation.objects.create(request.user,other_user)
-        conversation = Conversation.object.create()
+        conversation = Conversation.objects.create()
         conversation.participants.add(request.user, other_user)
         return redirect('conversation_view', conversation_id=conversation.id)
 
 
-def unread_message_count(request):
-    if request.user.is_authenticated:
-        count = Message.objects.filter(
-            conversation__participants=request.user,
-            is_read=False
-        ).exclude(sender=request.user).count()
-        
-        return {'unread_message_count': count}
-    return {'unread_message_count': 0}
 
 
-
-
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    
-    return render(request, 'post_detail.html', {'post': post})
 
 
 def add_comment(request, post_id):
@@ -762,63 +774,85 @@ def share_post(request, post_id):
 
 
 
-
 def delete_account(request):
-    if request.method != 'POST':
-        return render(request, 'delete_account.html')
+    email_sent = False
+    if request.method == 'POST':
+
+        form = DeleteAccount(request.POST)#recieving the email from form
+
+        if form.is_valid():#if form is valid
+            email = form.cleaned_data['email'] 
+            
+            try:
+                user = User.objects.get(email=email)#find uer by email
+
+                # Ensure the primary key is converted to bytes
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+                # Use default_token_generator consistently
+                token = default_token_generator.make_token(user)
+
+                
+                link = request.build_absolute_uri(
+                    reverse('confirm_deletion', kwargs={'uidb64': uid, 'token': token})
+                )
+                print("Link:", link)
+                # Send the email with the link
+                send_mail(
+                    'Delete Account Confirmation',
+                    f'Click the link to delete your account: {link}',
+                     settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
+                email_sent = True
+                return render(request, 'delete_account.html', {'email_sent': email_sent})
+
+                #messages.success(request, 'A confirmation email has been sent to your email address.')
+                    
+            
+
+            except User.DoesNotExist:
+                form.add_error('email', 'User not found')
+                return render(request, 'delete_account.html', {'form': form})
+        else:
+           
+            return render(request, 'delete_account.html', {'form': form})
+    else:# To show the form generally
         
-    email = request.POST.get('email')
+        form = DeleteAccount()
     
-    if not email:
-        return render(request, 'delete_account.html', {'error': 'Email is required'})
-
-    try:
-        user = User.objects.get(email=email)
-        
-        # Ensure the primary key is converted to bytes
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-        # Use default_token_generator consistently
-        token = default_token_generator.make_token(user)
-
-        # Create the confirmation link
-        link = f"{request.scheme}://{request.get_host()}/confirm_delete/{uid}/{token}/"
-        
-        # Send the email with the link
-        send_mail(
-            'Delete Account Confirmation',
-            f'Click the link to delete your account: {link}',
-            'from@example.com',
-            [user.email],
-            fail_silently=False,
-        )
-        
-        # Just use render with confirm_deletion.html which you already have
-        return render(request, 'confirm_deletion.html', {
-            'email_sent': True,
-            'message': 'Please check your email to confirm account deletion'
-        })
-
-    except User.DoesNotExist:
-        return render(request, 'delete_account.html', {'error': 'User not found'})
+    return render(request, 'delete_account.html', {'form': form})
 
 def confirm_deletion(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+    except :
         user = None
 
     if user is None or not default_token_generator.check_token(user, token):
         return HttpResponse("Invalid or expired link", status=400)
         
     if request.method == 'POST':
-        password = request.POST.get('password')
+        form= DeleteAccountPassword(request.POST)
+        if form.is_valid():
+           
+         password = form.cleaned_data['password'] 
+        
         if user.check_password(password):
-            username = user.username  # Store before deletion
+            username = user.username  
             user.delete()
-            return render(request, 'account_deleted.html', {'username': username})
+            context={ 'username': username}
+            return render(request, 'account_deleted.html', context)# This will not shown???????? check later
         else:
-            return render(request, 'confirm_deletion.html', {'error': 'Incorrect password.'})
+            context = {'form': form, 'uidb64': uidb64, 
+                'token': token , 'errorpass': 'Incorrect password.'}
             
-    return render(request, 'confirm_deletion.html', {'user': user})
+            return render(request, 'confirm_deletion.html', context)
+        
+    form= DeleteAccountPassword()
+
+    context = {'form': form, 'uidb64': uidb64, 
+                'token': token}
+    return render(request, 'confirm_deletion.html', context)

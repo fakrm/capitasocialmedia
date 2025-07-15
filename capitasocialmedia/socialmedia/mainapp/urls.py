@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+
 urlpatterns = [
     path('', views.splash, name='splash'),
      path('login/', views.user_login, name='login'),
@@ -59,7 +60,7 @@ path('reset/done/',
     path('conversation/<int:conversation_id>/', views.conversation_view, name='conversation_view'),
     path('search-users/', views.search_users, name='search_users'),
     path('new-conversation/<int:user_id>/', views.new_conversation, name='new_conversation'),
-    path('post/<int:post_id>/', views.post_detail, name='post_detail'),
+   
 
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     

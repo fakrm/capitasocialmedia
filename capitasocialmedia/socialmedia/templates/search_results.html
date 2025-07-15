@@ -11,12 +11,12 @@
                 <div class="col-md-4 mb-4">
                     <div class="card">
                         <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
+                            <div class="card-body-search">
                                 {% if user.profile.profile_pic %}
-                                    <img src="{{ user.profile.profile_pic.url }}" alt="{{ user.username }}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    <img src="{{ user.profile.profile_pic.url }}" alt="{{ user.username }}" class="rounded-circle me-3" >
                                     
                                 {% else %}
-                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="max-width: 60px; max-height: 60px;">
                                         <span style="font-size: 24px;">{{ user.username|first|upper }}</span>
                                     </div>
                                 {% endif %}

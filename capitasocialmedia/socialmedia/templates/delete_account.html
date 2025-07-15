@@ -1,9 +1,57 @@
-<form method="post" action="{% url 'delete_account' %}">
-    {% csrf_token %}
-    <label>Email:</label>
-    <input type="email" name="email" required>
-    <button type="submit">Request Account Deletion</button>
-    {% if error %}
-      <p style="color:red">{{ error }}</p>
-    {% endif %}
-  </form>
+
+  {% extends "base.html" %}
+  {% load widget_tweaks %}
+  
+  {% block navigation %}{% endblock %}
+  {% block content %}
+  <div class="row justify-content-center">
+
+     <div class="col-md-6">
+
+       <div class="card"> 
+        <div class="card-header">
+          <h2>Delete Account</h2>
+        </div>
+
+        <div class="card-body mt-5">
+           
+        {% if not email_sent %}
+          <form method="post" action="{% url 'delete_account' %}">
+              {% csrf_token %}
+                
+                        <label for="{{ form.email.id_for_label }}"    placeholder="name@gamil.com">Email</label>
+                        {{ form.email|add_class:"form-control" |attr:"placeholder:name@gmail.com" }}
+                        {% if form.email.errors %}
+                        <div class="text-danger">{{ form.email.errors }}</div>
+                        {% endif %}
+                  
+              
+              <button type="submit" class="btn btn-primary mt-5">Request Account Deletion</button>
+              {% if error %}
+                <div class="text-danger">{{ error }}</div>
+              {% endif %}
+              
+              
+          </form>
+         {% endif %}
+          {% if email_sent %}
+                <div class="text-success">A confirmation email has been sent to your email address.</div>
+          {% endif %}
+        </div>
+       
+
+
+
+
+        </div>
+
+    </div>
+
+  </div>
+    
+        
+          
+  
+  
+  
+  {% endblock %}

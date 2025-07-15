@@ -41,6 +41,12 @@ class MessageForm(forms.ModelForm):
         }
 
 
-
-
+class DeleteAccount(forms.Form):
+    email = forms.EmailField(required=True)
    
+
+
+class DeleteAccountPassword(forms.Form):
+    
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+
