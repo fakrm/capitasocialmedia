@@ -1,4 +1,4 @@
-/* Main Variables */
+
 :root {
   --primary-color: #3f45b6;
   --primary-hover: #2a2f9a;
@@ -10,7 +10,6 @@
   --transition: all 0.3s ease;
 }
 
-/* Global Styles */
 body {
   font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: var(--text-color);
@@ -50,7 +49,6 @@ h1::after {
   
 }
 
-/* Navbar Styling */
 .navbar {
  width: 100%;
  
@@ -71,7 +69,7 @@ h1::after {
 
 
 
-/* Button Styling */
+
 
 
 .btn-primary:hover,
@@ -95,7 +93,7 @@ h1::after {
  
 }
 
-/* Card Styling */
+
 .card {
   border: none;
   border-radius: var(--border-radius);
@@ -112,15 +110,15 @@ h1::after {
   overflow: hidden;
   margin-bottom: 0px;
  
-  background-color: #fff; /* Explicit white background */
-  min-height: 600px; /* Ensures card has a minimum height */
-  max-height: 600px; /* Prevents card from growing too large */
-  margin-top: 20px; /* Adds space between cards */
+  background-color: #fff; 
+  min-height: 600px; 
+  max-height: 600px; 
+  margin-top: 20px; 
 }
 
 .card-header {
   background: lightblue;
-  border-bottom: 1px solid rgba(0,0,0,0.08); /* Slightly darker border */
+  border-bottom: 1px solid rgba(0,0,0,0.08); 
   padding: 15px 20px;
 }
 
@@ -128,7 +126,7 @@ h1::after {
 .card-header h5 {
   margin-bottom: 3px;
   font-weight: 700;
-  color: #222; /* Darker for better contrast */
+  color: #222; 
 }
 
 .card-header small {
@@ -139,25 +137,25 @@ h1::after {
 
 .card-body {
   padding: 10px;
-  background-color: whitesmoke; /* Explicit white background */
-  min-height: 470px; /* Ensures body has a minimum height */
-  max-height: 470px; /* Prevents body from growing too large */
+  background-color: whitesmoke; 
+  min-height: 470px; 
+  max-height: 470px; 
 }
 
 
 
 .card-body.login {
   padding: 10px;
-  background-color: whitesmoke; /* Explicit white background */
-  min-height: 350px; /* Ensures body has a minimum height */
-  max-height: 350px; /* Prevents body from growing too large */
+  background-color: whitesmoke; 
+  min-height: 350px; 
+  max-height: 350px; 
 }
 
 .card-footer {
   background: lightblue;
-  border-top: 1px solid rgba(0,0,0,0.08); /* Slightly darker border */
+  border-top: 1px solid rgba(0,0,0,0.08); 
   padding: 12px 20px;
-  min-height: 80x; /* Ensures footer has a minimum height */
+  min-height: 80x; 
   max-height: 80x;
 }
 
@@ -171,8 +169,7 @@ h1::after {
 
 
 
-/* Image and Video Styling */
-/* More specific selectors first */
+
 .card-body.card-body-prof img {
   width: 100%;
   max-height: 150px !important;
@@ -214,24 +211,24 @@ h1::after {
  
 }
 
-/* Form Styling */
+
 .form-control {
   border-radius: var(--border-radius);
   padding:  8px  12px;
-  border: 1px solid #d0d4db; /* Darker border for better contrast from #e1e5eb */
+  border: 1px solid #d0d4db; 
   transition: var(--transition);
-  color: black; /* Ensure input text is dark enough */
+  color: black; 
 }
 
 .form-control:focus {
-  box-shadow: 0 0 0 3px rgba(63, 69, 182, 0.25); /* Matching new primary color */
+  box-shadow: 0 0 0 3px rgba(63, 69, 182, 0.25); 
   border-color: var(--primary-color);
 }
 
 .form-label {
   font-weight: 600;
   margin-bottom: 8px;
-  color: #333; /* Darker for better contrast from #495057 */
+  color: #333; 
 }
 
 textarea.form-control {
@@ -242,36 +239,15 @@ textarea.form-control {
 }
 
 .form-text {
-  color: #555; /* Darker hint text for better contrast from #6c757d */
+  color: #555; 
   font-size: 0.85rem;
   margin-top: 8px;
 }
 
-/* Alert Styling */
-.alert {
-  border: none;
-  border-radius: var(--border-radius);
-  padding: 15px 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
 
-.alert-info {
-  background-color: #d0eef7; /* Slightly darker for better contrast */
-  color: #00535c; /* Darker text for better readability from #006064 */
-}
 
-.alert-success {
-  background-color: #d8eeda; /* Slightly darker for better contrast */
-  color: #1e6724; /* Darker text for better readability from #2e7d32 */
-}
 
-.alert-danger, .text-danger {
-  color: #c91c1c; /* Better contrast from #d32f2f */
-  background-color: #fbe9e7; /* Background for alert-danger */
-}
 
-/* Login/Register Forms */
 .col-md-6 .card, .col-md-8 .card {
   max-width: 100%;
   margin-bottom: 30px;
@@ -286,99 +262,5 @@ textarea.form-control {
 
 
 
-
-/* Style for search results */
-.user-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.user-card {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.user-card:hover {
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.user-card img, .default-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 15px;
-  object-fit: cover;
-}
-
-.default-avatar {
-  background: green;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 24px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: #2196F3;
-}
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-/* Dark mode overrides */
-body.dark {
-  background-color: gray;
-  color: whitesmoke;
-}
-
-body.dark .bg-dark {
-  background-color: blue !important;
-}
-
-body.dark .navbar,
-body.dark .form-control,
-body.dark .alert {
-  background-color: #2a2a2a !important;
-  color: #ffffff;
-  border-color: #444;
-}
-
-body.dark .nav-link,
-body.dark .navbar-brand {
-  color: #ffffff !important;
-}
-
-body.dark input::placeholder {
-  color: #aaa;
-}
 
 
