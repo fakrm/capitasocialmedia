@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Post, Profile
 from .models import Message
-from .models import Comment
+
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
@@ -36,9 +36,9 @@ class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = ['content']
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Type your message...', 'class': 'w-full p-2 border rounded'})
-        }
+        widgets = { 'content': forms.Textarea()}#This would specify a form with a comment that uses a larger Textarea widget, rather than the default TextInput widget.
+           
+        
 
 
 class DeleteAccount(forms.Form):

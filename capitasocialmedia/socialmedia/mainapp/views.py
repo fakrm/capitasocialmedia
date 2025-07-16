@@ -44,7 +44,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .forms import UserLoginForm
 from .models import Profile
-
+import base64
+from django.core.files.base import ContentFile
 from itertools import chain
 from operator import attrgetter
 
@@ -199,10 +200,10 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 def verify_email(request, token):
-    profile = get_object_or_404(Profile, verification_token=token)
+    profile = get_object_or_404(Profile, verification_token=token)  # Search in DB for the profile with the specified token
     if profile:
         profile.email_verified = True
-        profile.verification_token = None
+        profile.verification_token = None # All tokens will be removed after verification
         profile.save()
         messages.success(request, 'Email verified! You can now log in.')
         return redirect('login')
@@ -216,8 +217,9 @@ def verify_email(request, token):
 
 def user_login(request):
     if request.method == 'POST':
-        form = UserLoginForm(request.POST)
+        form = UserLoginForm(request.POST) # Call the login form
         if form.is_valid():
+           
             username = request.POST.get('username')  
             password = request.POST.get('password')
             user = authenticate(username=username, password=password)
@@ -230,7 +232,7 @@ def user_login(request):
                    
                 
                     messages.success(request, f'Welcome, {username}!')
-                    return redirect('home')
+                    return redirect('splash')
                 else:
                     messages.warning(request, 'Please verify your email before logging in.')
             else:
@@ -243,6 +245,7 @@ def user_login(request):
 
 def user_logout(request):
     logout(request)
+    
     messages.info(request, 'You have been logged out.')
     return redirect('login')
 
@@ -265,7 +268,7 @@ def profile(request):
     follower_count = Follower.objects.filter(following=request.user.profile).count()
     following_count = Follower.objects.filter(follower=request.user.profile).count()
     context = {
-        'form': form,
+        'form': form,# 'bio', 'profile_pic', 'private_account'
         'user_posts': user_posts,
         'follower_count': follower_count,
         'following_count': following_count
@@ -279,16 +282,16 @@ def profile(request):
 
 def create_post(request):
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
+        form = PostForm(request.POST, request.FILES)# No need for model instance since we do not need to pre fill the form
         if form.is_valid():
             # Create a new post instance but don't save it yet
-            post = form.save(commit=False)
+            post = form.save(commit=False) # Save but still it is not in DB
             post.user = request.user
             
             # Check if post is a text post
             if post.post_type == 'text':
                 post.file = None
-                post.text_content = request.POST.get('text_content')#it is null which is worng check later???
+                post.text_content = request.POST.get('text_content')#it is null which is worng check later??? 
             else:
                     file = request.FILES.get('file')
                     if file:
@@ -306,32 +309,21 @@ def create_post(request):
             messages.success(request, 'Your post has been created!')
             return redirect('home')
     else:
-        form = PostForm()
+        form = PostForm()# Shows empty form
     return render(request, 'create_post.html', {'form': form})
 
 
-@login_required
 def delete_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id, user=request.user)
+    post = get_object_or_404(Post, id=post_id, user=request.user)# **kargs
     if post.user==request.user:
      post.delete()
      messages.success(request, 'Post deleted successfully!')
     return redirect('profile')
 
 
-import base64
-from django.core.files.base import ContentFile
 
 
-def edit_image(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    
-    # Check if the post belongs to the current user or is an image post
-    if post.user != request.user or post.post_type != 'image':
-        messages.error(request, 'You cannot edit this post.')
-        return redirect('home')
-    
-    return render(request, 'edit_image.html', {'post': post})
+
 
 
 def toggle_privacy(request):
@@ -345,67 +337,22 @@ def toggle_privacy(request):
            profile.private_account = True
            status = 'private'
            
-       profile.save()
+       profile.save()# Save in DB
        messages.success(request, f'Your account is now {status}.')
    
    return redirect('profile')
 
 
 
-def save_edited_image(request, post_id):
-    if request.method != 'POST':
-        return redirect('home')
-    
-    post = get_object_or_404(Post, id=post_id)
-    
-    # Check if the post belongs to the current user
-    if post.user != request.user:
-        messages.error(request, 'You cannot edit this post.')
-        return redirect('home')
-    
-    # Get the image data from the form
-    image_data = request.POST.get('edited_image_data')
-    
-    if image_data:
-        # Remove the data URL prefix to get the base64 string
-        format, imgstr = image_data.split(';base64,')
-        ext = format.split('/')[-1]
-        
-        # Generate a unique filename
-        filename = f"{post.id}_edited.{ext}"
-        
-        # Convert base64 to file
-        image_file = ContentFile(base64.b64decode(imgstr), name=filename)
-        
-        # Update the post's file
-        post.file = image_file
-        post.save()
-        
-        messages.success(request, 'Image edited successfully!')
-    
-    return redirect('profile')
 
 
-def create_text_post(request):
-    if request.method == 'POST':
-        # Handle the form submission
-        text_content = request.POST.get('text_content')  # Get the text content from the form
-
-        if text_content:
-            # Create a new post with text
-            post = Post(user=request.user, post_type='text', text_content=text_content)
-            post.save()
-            messages.success(request, 'Your text post has been created!')
-            return redirect('home')
-        else:
-            messages.error(request, 'Text content cannot be empty.')
-            return redirect('create_text_post')
-    return render(request, 'create_text_post.html')
 
 
 
 def download_file(request, post_id):
+    # Find the post by kargs
     post = get_object_or_404(Post, id=post_id)
+
     file_path = post.file.path
     file_name = post.file.name
     print(file_path)
@@ -430,6 +377,7 @@ def download_file(request, post_id):
 
 def follow_user(request, username):
     user_to_follow = get_object_or_404(User, username=username)
+
     from_profile = request.user.profile
     to_profile = user_to_follow.profile
 
@@ -454,6 +402,7 @@ def follow_user(request, username):
 
 def unfollow_user(request, username):
     user_to_unfollow = get_object_or_404(User, username=username)
+
     from_profile = request.user.profile
     to_profile = user_to_unfollow.profile
     
@@ -467,6 +416,7 @@ def unfollow_user(request, username):
 
 
 def cancel_request(request, username):
+    '''Cancel a follow request to a user for peivate accounts befor accepting or rejecting'''
     user_to_cancel = get_object_or_404(User, username=username)
     from_profile = request.user.profile
     to_profile = user_to_cancel.profile
@@ -475,6 +425,7 @@ def cancel_request(request, username):
     follow_request.delete()
     
     messages.success(request, f"Follow request to {username} canceled.")
+    
     return redirect('profile_detail', username=username)
 
 
@@ -485,6 +436,7 @@ def follow_requests(request):
 
 
 def accept_request(request, request_id):
+    # Get the request where request user is to_user
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
     
     # Create follower 
@@ -498,7 +450,7 @@ def accept_request(request, request_id):
 
 
 def reject_request(request, request_id):
-    #found the request in DB
+    #found the request in DB where request.user is to_user
     follow_request = get_object_or_404(FollowRequest, id=request_id, to_user=request.user.profile)
    
     follow_request.delete()
@@ -508,6 +460,7 @@ def reject_request(request, request_id):
 
 
 def profile_detail(request, username):
+    #This is not same as profile, this is for other users to visit sb profile (later just others)
     user_profile = get_object_or_404(User, username=username)
     profile = user_profile.profile
     
@@ -550,6 +503,7 @@ def profile_detail(request, username):
 
 
 def followers_list(request, username):
+    # Only show when account is not private or is following
     user = get_object_or_404(User, username=username)
 
     profile = user.profile
@@ -582,13 +536,6 @@ def following_list(request, username):
 
 
 
-class MessageForm(forms.ModelForm):
-    class Meta:
-        model = Message
-        fields = ['content']
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Type your message...', 'class': 'w-full p-2 border rounded'})
-        }
 
 
 
@@ -626,7 +573,7 @@ def conversation_view(request, conversation_id):
     
     return render(request, 'conversation.html', context)
 
-@login_required
+
 
 def search_users(request):
     query = request.GET.get('q', '')
@@ -639,8 +586,10 @@ def search_users(request):
         print(users)
     else:
         users = User.objects.none()#no match
-    other_participants = []
+    other_participants = [] #for showing dropdown menu
+
     existing_conversations = Conversation.objects.filter(participants=request.user)
+
     messages = Message.objects.filter(conversation__in=existing_conversations)
     for existing_conversation in existing_conversations:
         user_in_conversations = existing_conversation.get_other_participant(request.user)
@@ -711,6 +660,7 @@ def add_comment(request, post_id):
         'post': post,
         'comments': comments
     })
+
 
 def toggle_like(request, post_id):
     
@@ -824,9 +774,12 @@ def delete_account(request):
     
     return render(request, 'delete_account.html', {'form': form})
 
+
+
 def confirm_deletion(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
+
         user = User.objects.get(pk=uid)
     except :
         user = None
@@ -855,4 +808,5 @@ def confirm_deletion(request, uidb64, token):
 
     context = {'form': form, 'uidb64': uidb64, 
                 'token': token}
+    
     return render(request, 'confirm_deletion.html', context)

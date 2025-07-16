@@ -21,9 +21,7 @@ class Profile(models.Model):
     verification_token = models.CharField(max_length=180, blank=True, null=True)
     private_account = models.BooleanField(default=False)
     email= models.EmailField(max_length=254, blank=True, null=True)
-    #how to show when calling this obeject gets the username from the user model
-    def __str__(self):
-        return f'{self.user.username} Profile'
+   
 
 
 class Post(models.Model):
@@ -39,29 +37,12 @@ class Post(models.Model):
     file = models.FileField(upload_to=user_directory_path, blank=True, null=True)  
     text_content = models.TextField(blank=True, null=True)
     post_type = models.CharField(max_length=10, choices=POST_TYPES )
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f'{self.title} by {self.user.username}'
+   
+ 
+
     
- #to check validations fist and then my validations
-    def clean(self):
-        super().clean()
-        if (self.post_type == 'image' or self.post_type == 'video') and not self.file:
-            raise ValidationErr({'file': 'Image and video posts require a file upload.'})
-        
-
-    def delete(self, *args, **kwargs):
-        # Delete the file when the post is deleted
-        if self.file and os.path.isfile(self.file.path):
-            os.remove(self.file.path)
-        super().delete(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse('post_detail', kwargs={'post_id': self.id})
-
-    def total_posts(self):
-        return Post.objects.filter(user=self.user).count()
     
    
     
@@ -76,6 +57,7 @@ class FollowRequest(models.Model):
     
     class Meta:
         unique_together = ('from_user', 'to_user')
+
 #for public profiles we just create follower without sending requests
 class Follower(models.Model):
     follower = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='following')
@@ -130,7 +112,7 @@ class Share(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self,  **kwargs):
-        
+        #used to set id same as post id
         if not self.pk:
             self.id = self.post.id
         super().save( **kwargs)

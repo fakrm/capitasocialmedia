@@ -2,145 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Splash Page</title>
-    
-    <meta http-equiv="refresh" content="1;url={% url 'home' %}">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        
-        .container {
-            text-align: center;
-        }
-        
-        .logo {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 20px;
-        }
-        
-        .logo-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px;
-            height: 150px;
-            background: #4a6cf7;
-            border-radius: 50%;
-            animation: pulse 2s infinite ease-in-out;
-        }
-        
-        .logo-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 48px;
-            font-weight: bold;
-            color: #4a6cf7;
-            z-index: 2;
-        }
-        
-        .logo-orbit {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            border: 4px dashed rgba(74, 108, 247, 0.5);
-            animation: rotate 3s linear infinite;
-        }
-        
-        .logo-dot {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #4a6cf7;
-            border-radius: 50%;
-            top: -10px;
-            left: calc(50% - 10px);
-            animation: orbit 3s linear infinite;
-        }
-        
-        .app-name {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-            opacity: 0;
-            animation: fadeIn 1s ease-in-out forwards 0.5s;
-        }
-        
-        .loading {
-            color: #666;
-            font-size: 16px;
-            position: relative;
-        }
-        
-        .loading::after {
-            content: '';
-            animation: loading 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.95); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(0.95); }
-        }
-        
-        @keyframes rotate {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        
-        @keyframes orbit {
-            from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
-            to { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes loading {
-            0% { content: '.'; }
-            33% { content: '..'; }
-            66% { content: '...'; }
-            100% { content: '.'; }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/splash.css' %}">
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            <div class="logo-circle"></div>
-            <div class="logo-inner">M</div>
-            <div class="logo-orbit"></div>
-            <div class="logo-dot"></div>
-        </div>
-        <div class="app-name">My App</div>
-        <div class="loading">Loading</div>
+    <div id="loader-wrapper">
+        <div id="loader"></div>
     </div>
+
+    <script>
+        // Redirect after 3 seconds
+        setTimeout(function() {
+            window.location.href = "{% url 'home' %}";
+        }, 3000);
+    </script>
 </body>
 </html>
+<!-- The link of splash screen
+https://codepen.io/ekkebus/pen/ppMbrg-->

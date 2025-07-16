@@ -3,9 +3,10 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', views.splash, name='splash'),
+    
      path('login/', views.user_login, name='login'),
     path('home/', views.home, name='home'),
+    path('', views.splash, name='splash'),
     path('register/', views.register, name='register'),
    
     
@@ -18,7 +19,7 @@ urlpatterns = [
     path('create-post/', views.create_post, name='create_post'),
     path('delete-post/<int:post_id>/', views.delete_post, name='delete_post'),
     path('download/<int:post_id>/', views.download_file, name='download_file'),
-    path('create_text_post/', views.create_text_post, name='create_text_post'),
+    
     
     
     path('toggle-privacy/', views.toggle_privacy, name='toggle_privacy'),

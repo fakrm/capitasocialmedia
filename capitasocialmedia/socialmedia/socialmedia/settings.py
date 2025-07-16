@@ -156,5 +156,5 @@ EMAIL_HOST_USER = 'miasafaei1376@gmail.com'
 EMAIL_HOST_PASSWORD = 'nrxh bfjc ymbq sxcz'  
 
 
-
+#Used for login decorator
 LOGIN_URL = '/login/'
